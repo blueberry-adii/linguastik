@@ -24,7 +24,14 @@ export class ConfigManager {
     private config: Config;
 
     constructor() {
+        this.ensureConfigDir();
         this.config = this.loadConfig();
+    }
+
+    private ensureConfigDir() {
+        if (!fs.existsSync(CONFIG_DIR)) {
+            fs.mkdirSync(CONFIG_DIR, { recursive: true });
+        }
     }
 
     private loadConfig(): Config {
