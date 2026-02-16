@@ -1,1 +1,1 @@
-export const logLingo = (msg: string) => console.log(`[Linguastic] ${msg}`);
+export { pLimit } from './utils.js';
