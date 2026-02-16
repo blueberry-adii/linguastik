@@ -1,1 +1,3 @@
-# linguastik
+# Linguastik - powered by lingo.dev
+
+### Work in Progress...
