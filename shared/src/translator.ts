@@ -12,7 +12,7 @@ export class Translator {
         });
     }
 
-    public async translate(text: string): Promise<any> {
+    public async translate(text: string): Promise<string> {
         const config = configManager.get();
         const sourceLang = 'auto';
         const targetLang = config.targetLang;
@@ -20,6 +20,27 @@ export class Translator {
         const cached = translationCache.get(text, sourceLang, targetLang);
         if (cached) {
             return cached;
+        }
+
+        try {
+            if (!text.trim() || text.length < 2) {
+                return text;
+            }
+
+            if (!configManager.getApiKey()) {
+                return text;
+            }
+
+            const translatedText = await this.lingo.localizeText(text, {
+                sourceLocale: null,
+                targetLocale: targetLang,
+            });
+
+            translationCache.set(text, sourceLang, targetLang, translatedText);
+
+            return translatedText;
+        } catch (error) {
+            return text;
         }
     }
 }
