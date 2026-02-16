@@ -55,4 +55,25 @@ export class ConfigManager {
 
         return defaultConfig;
     }
+
+    public get(): Config {
+        return this.config;
+    }
+
+    public set(key: keyof Config, value: any) {
+        this.config[key] = value;
+        this.saveConfig();
+    }
+
+    private saveConfig() {
+        try {
+            fs.writeFileSync(CONFIG_FILE, JSON.stringify(this.config, null, 2));
+        } catch (error) {
+            console.error('Failed to save config file:', error);
+        }
+    }
+
+    public getApiKey(): string | undefined {
+        return this.config.apiKey;
+    }
 }
