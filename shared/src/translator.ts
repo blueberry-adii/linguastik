@@ -44,3 +44,5 @@ export class Translator {
         }
     }
 }
+
+export const translator = new Translator();
