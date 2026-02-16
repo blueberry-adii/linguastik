@@ -77,3 +77,5 @@ export class ConfigManager {
         return this.config.apiKey;
     }
 }
+
+export const configManager = new ConfigManager();
