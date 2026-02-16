@@ -1,0 +1,7 @@
+{
+  "name": "@linguastik/cli",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": { "@linguastik/shared": "*" },
+  "bin": { "lg": "./dist/index.js" }
+}

@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "declaration": true,
+    "composite": true,
+    "strict": true,
+    "baseUrl": ".", 
+    "paths": {
+      "@linguastik/shared": ["./shared/src/index.ts"]
+    },
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  }
+}

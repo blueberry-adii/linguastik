@@ -8,7 +8,11 @@
     "shared"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc --build",
+    "clean": "tsc --build --clean",
+    "cli": "tsx packages/cli/src/index.ts",
+    "agent": "tsx packages/agent/src/agent.ts",
+    "extension:build": "esbuild packages/extension/src/content.ts --bundle --outfile=packages/extension/dist/content.js"
   },
   "repository": {
     "type": "git",
@@ -17,9 +21,16 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/blueberry-adii/linguastik/issues"
   },
-  "homepage": "https://github.com/blueberry-adii/linguastik#readme"
+  "homepage": "https://github.com/blueberry-adii/linguastik#readme",
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "esbuild": "^0.27.3",
+    "rimraf": "^6.1.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
 }
