@@ -36,4 +36,49 @@ export class TranslationCache {
         }
         return path.join(shardDir, `${hash}.json`);
     }
+
+    public get(text: string, sourceLang: string, targetLang: string): string | null {
+        const hash = this.getHash(text, sourceLang, targetLang);
+
+        const cached = this.memoryCache.get<string>(hash);
+        if (cached) {
+            return cached;
+        }
+
+        const filePath = this.getFilePath(hash);
+        if (fs.existsSync(filePath)) {
+            try {
+                const content = fs.readFileSync(filePath, 'utf-8');
+                const data = JSON.parse(content);
+                this.memoryCache.set(hash, data.translation);
+                return data.translation;
+            } catch (err) {
+                console.error('Error reading cache file:', err);
+            }
+        }
+
+        return null;
+    }
+
+    public set(text: string, sourceLang: string, targetLang: string, translation: string) {
+        const hash = this.getHash(text, sourceLang, targetLang);
+
+        this.memoryCache.set(hash, translation);
+
+        const filePath = this.getFilePath(hash);
+        try {
+            fs.writeFileSync(
+                filePath,
+                JSON.stringify({
+                    original: text,
+                    translation,
+                    sourceLang,
+                    targetLang,
+                    timestamp: Date.now(),
+                })
+            );
+        } catch (err) {
+            console.error('Error writing cache file:', err);
+        }
+    }
 }
