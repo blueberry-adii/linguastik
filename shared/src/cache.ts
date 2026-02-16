@@ -82,3 +82,5 @@ export class TranslationCache {
         }
     }
 }
+
+export const translationCache = new TranslationCache();
