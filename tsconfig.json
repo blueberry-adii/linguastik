@@ -4,6 +4,6 @@
     { "path": "./shared" },
     { "path": "./packages/cli" },
     // { "path": "./packages/agent" },
-    // { "path": "./packages/extension" }
+    { "path": "./packages/extension" }
   ]
 }
