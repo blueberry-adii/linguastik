@@ -33,4 +33,23 @@ program
                 console.log(format.success(`Target language set to: ${options.lang}`));
             }
         }
+
+        const command = commandParts[0];
+        const args = commandParts.slice(1);
+
+        if (!configManager.getApiKey()) {
+            console.log(format.warn('Warning: No API key found. Translation will be disabled.'));
+            console.log(format.info('Run `lingo-dev --key <your-api-key>` to set it.'));
+        }
+
+        let capturedStderr = '';
+        if (options.explain) {
+            const originalStderrWrite = process.stderr.write;
+            process.stderr.write = function (chunk: any, encoding?: any, cb?: any): boolean {
+                capturedStderr += chunk.toString();
+                return originalStderrWrite.call(process.stderr, chunk, encoding, cb);
+            } as any;
+        }
+
+        await execWithTranslation(command, args);
     });
