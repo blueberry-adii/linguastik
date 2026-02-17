@@ -8,3 +8,5 @@ export const format = {
     warn: (msg: string) => chalk.yellow(msg),
     dim: (msg: string) => chalk.dim(msg),
 };
+
+export const createSpinner = (text: string) => ora(text);
