@@ -43,13 +43,49 @@ program
         }
 
         let capturedStderr = '';
-        if (options.explain) {
-            const originalStderrWrite = process.stderr.write;
-            process.stderr.write = function (chunk: any, encoding?: any, cb?: any): boolean {
-                capturedStderr += chunk.toString();
-                return originalStderrWrite.call(process.stderr, chunk, encoding, cb);
-            } as any;
+        try {
+            if (options.explain) {
+                const originalStderrWrite = process.stderr.write;
+                process.stderr.write = function (chunk: any, encoding?: any, cb?: any): boolean {
+                    capturedStderr += chunk.toString();
+                    return originalStderrWrite.call(process.stderr, chunk, encoding, cb);
+                } as any;
+            }
+            await execWithTranslation(command, args);
         }
+        catch (error: any) {
+            if (options.explain && error.message) {
+                capturedStderr += '\n' + error.message;
+            }
+            console.error(format.error(`Execution failed: ${error.message || error}`));
+            process.exitCode = 1;
+        } finally {
+            if (options.explain && capturedStderr) {
+                console.log('\n--- Error Explanation ---\n');
+                const explanation = explainer.explain(capturedStderr);
+                if (explanation) {
+                    const severityColor = explanation.severity === 'error' ? format.error :
+                        explanation.severity === 'warning' ? format.warn : format.info;
+                    console.log(severityColor(`[${explanation.severity.toUpperCase()}] ${explanation.title}`));
+                    console.log(format.dim(`Tool: ${explanation.tool}\n`));
+                    console.log(format.error(`Problem: ${explanation.problem}`));
 
-        await execWithTranslation(command, args);
+                    if (explanation.causes && explanation.causes.length > 0) {
+                        console.log(format.dim('\nPossible causes:'));
+                        explanation.causes.forEach(c => console.log(`  - ${c}`));
+                    }
+
+                    if (explanation.fixes && explanation.fixes.length > 0) {
+                        console.log(format.success('\nSuggested fixes:'));
+                        explanation.fixes.forEach(f => console.log(`  - ${f}`));
+                    }
+
+                    if (explanation.learnMoreUrl) {
+                        console.log(format.dim(`\nLearn more: ${explanation.learnMoreUrl}`));
+                    }
+                } else {
+                    console.log(format.dim('No specific error pattern matched for explanation.'));
+                }
+            }
+        }
     });
