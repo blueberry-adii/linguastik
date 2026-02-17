@@ -41,6 +41,30 @@ export async function execWithTranslation(command: string, args: string[]) {
             }
         };
 
+        child.stdout.on('data', (data) => {
+            const chunk = data.toString();
+            stdoutBuffer += chunk;
+            if (stdoutBuffer.includes('\n')) {
+                const lines = stdoutBuffer.split('\n');
+                stdoutBuffer = lines.pop() || '';
+                for (const line of lines) {
+                    processLine(line, false);
+                }
+            }
+        });
+
+        child.stderr.on('data', (data) => {
+            const chunk = data.toString();
+            stderrBuffer += chunk;
+            if (stderrBuffer.includes('\n')) {
+                const lines = stderrBuffer.split('\n');
+                stderrBuffer = lines.pop() || '';
+                for (const line of lines) {
+                    processLine(line, true);
+                }
+            }
+        });
+
         child.on('close', async (code) => {
             await Promise.all([stdoutQueue, stderrQueue]);
 
