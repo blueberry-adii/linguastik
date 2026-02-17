@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "Linguastik Lens",
+  "version": "1.0.0",
+  "description": "Search in your language. Discover the world's knowledge.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://www.google.com/*",
+    "https://google.serper.dev/*",
+    "https://api.lingo.dev/*",
+    "https://engine.lingo.dev/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.google.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "Linguastik Lens",
+    "default_popup": "popup.html"
+  }
+}
