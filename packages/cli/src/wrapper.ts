@@ -17,6 +17,30 @@ export async function execWithTranslation(command: string, args: string[]) {
         let stdoutQueue = Promise.resolve();
         let stderrQueue = Promise.resolve();
 
+        const processLine = (line: string, isStderr: boolean) => {
+            const translationTask = limit(() => translator.translate(line));
+
+            if (isStderr) {
+                stderrQueue = stderrQueue.then(async () => {
+                    try {
+                        const result = await translationTask;
+                        process.stderr.write(result + '\n');
+                    } catch (err) {
+                        process.stderr.write(line + '\n');
+                    }
+                });
+            } else {
+                stdoutQueue = stdoutQueue.then(async () => {
+                    try {
+                        const result = await translationTask;
+                        process.stdout.write(result + '\n');
+                    } catch (err) {
+                        process.stdout.write(line + '\n');
+                    }
+                });
+            }
+        };
+
         child.on('close', async (code) => {
             await Promise.all([stdoutQueue, stderrQueue]);
 
