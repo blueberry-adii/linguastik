@@ -34,6 +34,13 @@ program
             }
         }
 
+        if (!commandParts || commandParts.length === 0) {
+            if (!options.key && !options.lang) {
+                program.help();
+            }
+            return;
+        }
+
         const command = commandParts[0];
         const args = commandParts.slice(1);
 
@@ -87,5 +94,11 @@ program
                     console.log(format.dim('No specific error pattern matched for explanation.'));
                 }
             }
+
+            if (process.exitCode) {
+                process.exit(process.exitCode);
+            }
         }
     });
+
+program.parse(process.argv);
