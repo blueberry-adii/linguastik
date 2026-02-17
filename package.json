@@ -8,7 +8,7 @@
     "shared"
   ],
   "scripts": {
-    "build": "tsc --build",
+    "build": "tsc --build && npm run build --workspace=@linguastik/extension",
     "clean": "tsc --build --clean",
     "cli": "tsx packages/cli/src/index.ts",
     "agent": "tsx packages/agent/src/agent.ts",
