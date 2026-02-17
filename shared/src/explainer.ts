@@ -132,3 +132,5 @@ export class Explainer {
         return this.patterns.filter(p => p.severity === severity);
     }
 }
+
+export const explainer = new Explainer();
