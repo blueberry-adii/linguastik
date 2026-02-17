@@ -1,2 +1,17 @@
-import { logLingo } from '@linguastik/shared';
-logLingo("CLI is alive!");
+#!/usr/bin/env node
+import { Command } from 'commander';
+import { createRequire } from 'module';
+import { configManager } from '@linguastik/shared';
+import { execWithTranslation } from './wrapper.js';
+import { format } from './formatter.js';
+import { explainer } from '@linguastik/shared';
+
+const require = createRequire(import.meta.url);
+const pkg = require('../package.json');
+
+const program = new Command();
+
+program
+    .name('lingo-dev')
+    .description('Wraps terminal commands and translates their output in real-time')
+    .version(pkg.version);
