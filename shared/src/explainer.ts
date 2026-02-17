@@ -1,3 +1,6 @@
+import * as fs from 'fs';
+import * as path from 'path';
+
 export type Severity = 'error' | 'warning' | 'info';
 
 interface MultiLangExplanation {
@@ -48,7 +51,27 @@ export class Explainer {
         this.loadPatterns();
     }
 
-    private loadPatterns() {}
+    private loadPatterns() {
+        try {
+            const patternsPath = path.join(__dirname, 'patterns', 'errors.json');
+            const devPath = path.join(__dirname, '..', 'src', 'patterns', 'errors.json');
+
+            let finalPath = '';
+            if (fs.existsSync(patternsPath)) {
+                finalPath = patternsPath;
+            } else if (fs.existsSync(devPath)) {
+                finalPath = devPath;
+            }
+
+            if (finalPath) {
+                const content = fs.readFileSync(finalPath, 'utf-8');
+                const db: PatternsDB = JSON.parse(content);
+                this.patterns = db.patterns;
+            }
+        } catch (error) {
+            console.warn('Failed to load error patterns:', error);
+        }
+    }
 
     private getLocalizedText(explanation: MultiLangExplanation): string {
         return "";
