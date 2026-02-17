@@ -1,5 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export type Severity = 'error' | 'warning' | 'info';
 
@@ -114,5 +118,17 @@ export class Explainer {
             }
         }
         return null;
+    }
+
+    public getPatterns(): ErrorPattern[] {
+        return this.patterns;
+    }
+
+    public getPatternsByTool(tool: string): ErrorPattern[] {
+        return this.patterns.filter(p => p.tool === tool);
+    }
+
+    public getPatternsBySeverity(severity: Severity): ErrorPattern[] {
+        return this.patterns.filter(p => p.severity === severity);
     }
 }
