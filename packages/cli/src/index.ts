@@ -21,3 +21,16 @@ program
     .option('-k, --key <key>', 'Set Lingo.dev API key')
     .option('--explain', 'Explain any errors encountered')
     .argument('[command...]', 'Command to run and translate')
+    .action(async (commandParts, options) => {
+        if (options.key) {
+            configManager.set('apiKey', options.key);
+            console.log(format.success('API key updated successfully.'));
+        }
+
+        if (options.lang) {
+            configManager.set('targetLang', options.lang);
+            if (!commandParts || commandParts.length === 0) {
+                console.log(format.success(`Target language set to: ${options.lang}`));
+            }
+        }
+    });
