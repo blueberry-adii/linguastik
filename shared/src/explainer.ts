@@ -73,8 +73,12 @@ export class Explainer {
         }
     }
 
+    public setLanguage(lang: string) {
+        this.targetLang = lang;
+    }
+
     private getLocalizedText(explanation: MultiLangExplanation): string {
-        return "";
+        return explanation[this.targetLang] || explanation.en;
     }
 
     public explain(text: string): Explanation | null {
