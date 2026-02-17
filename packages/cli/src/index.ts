@@ -15,3 +15,9 @@ program
     .name('lingo-dev')
     .description('Wraps terminal commands and translates their output in real-time')
     .version(pkg.version);
+
+program
+    .option('-l, --lang <lang>', 'Target language code (e.g., es, ja, fr)')
+    .option('-k, --key <key>', 'Set Lingo.dev API key')
+    .option('--explain', 'Explain any errors encountered')
+    .argument('[command...]', 'Command to run and translate')
