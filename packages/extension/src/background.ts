@@ -21,8 +21,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             console.warn('Received NEW_SEARCH without tab ID');
         }
         return true;
+    } else if (message.type === 'TRANSLATE_SELECTION') {
+        handleQuickTranslation(message.text)
+            .then(result => sendResponse({ success: true, ...result }))
+            .catch(err => sendResponse({ success: false, error: err.message }));
+        return true;
     }
 });
+
+async function handleQuickTranslation(text: string) {
+    const config = await configManager.load();
+    const targetLang = config.userLanguage || 'en';
+    const translation = await translator.translate(text, targetLang);
+    return { translation, lang: targetLang };
+}
 
 async function handleSearch(query: string, tabId: number) {
     console.log(`Processing search: "${query}"`);

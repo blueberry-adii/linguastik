@@ -249,18 +249,40 @@ function showPopup(x: number, y: number, text: string) {
 
     host.shadowRoot.appendChild(floatingPopup);
 
-    setTimeout(() => {
+    chrome.runtime.sendMessage({ type: 'TRANSLATE_SELECTION', text }, (response) => {
         if (!floatingPopup) return;
-        floatingPopup.innerHTML = `
-            <div class="linguastik-popup-header">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="#00E5FF"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.09-.09 2.54-2.51.13.56zm5.66-2.54l-2.53 7L14 19l4.5 9H20l1.25-3.5h5.5L28 28h1.5l4.5-9h-1.97l-2.53-7H18.53zM22.5 22h-3l1.5-4.25L22.5 22z"/></svg>
-                English
-            </div>
-            <div class="linguastik-popup-content">
-                ${text}
-            </div>
-        `;
-    }, 1500);
+
+        if (response && response.success) {
+            const langName = getLangName(response.lang);
+            floatingPopup.innerHTML = `
+                <div class="linguastik-popup-header">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#00E5FF"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.09-.09 2.54-2.51.13.56zm5.66-2.54l-2.53 7L14 19l4.5 9H20l1.25-3.5h5.5L28 28h1.5l4.5-9h-1.97l-2.53-7H18.53zM22.5 22h-3l1.5-4.25L22.5 22z"/></svg>
+                    ${langName}
+                </div>
+                <div class="linguastik-popup-content">
+                    ${response.translation || "Translation unavailable."}
+                </div>
+            `;
+        } else {
+            floatingPopup.innerHTML = `
+                <div class="linguastik-popup-header" style="color: #ff6b6b">Error</div>
+                <div class="linguastik-popup-content" style="color: #ff6b6b; font-size: 13px;">
+                    ${response?.error || "Failed to translate."}
+                </div>
+            `;
+        }
+    });
+}
+
+const LANG_MAP: Record<string, string> = {
+    'en': 'English', 'es': 'Spanish', 'fr': 'French', 'de': 'German',
+    'it': 'Italian', 'pt': 'Portuguese', 'ru': 'Russian', 'zh': 'Chinese',
+    'ja': 'Japanese', 'ko': 'Korean', 'hi': 'Hindi', 'ar': 'Arabic',
+    'tr': 'Turkish', 'nl': 'Dutch', 'pl': 'Polish', 'sv': 'Swedish'
+};
+
+function getLangName(code: string): string {
+    return LANG_MAP[code] || code.toUpperCase();
 }
 
 function removeFloatingButton() {
