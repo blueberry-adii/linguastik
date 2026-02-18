@@ -90,7 +90,8 @@
     <div class="status" id="status"></div>
 
     <button id="eyeBtn" class="eye-btn" title="View Details">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
             <circle cx="12" cy="12" r="3"></circle>
         </svg>
@@ -103,9 +104,20 @@
             align-items: center;
             justify-content: center;
             padding: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #888;
         }
+
         .eye-btn:hover {
             background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        .eye-btn.active {
+            background: rgba(0, 229, 255, 0.15);
+            color: #00E5FF;
+            border: 1px solid rgba(0, 229, 255, 0.3);
         }
     </style>
 
