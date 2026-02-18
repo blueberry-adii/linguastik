@@ -40,6 +40,12 @@ async function handleSearch(query: string, tabId: number) {
 
         const detectedLang = await translator.detectLanguage(query);
         console.log(`Detected Query Language: ${detectedLang}`);
+
+        if (detectedLang && detectedLang !== 'en') {
+            console.log(`Updating User Language Preference to: ${detectedLang}`);
+            configManager.set('userLanguage', detectedLang);
+        }
+
         console.log('Determining relevant regions...');
         let regions = await translator.determineRelevantLanguages(query, userLang);
         console.log('Target Regions:', regions);
