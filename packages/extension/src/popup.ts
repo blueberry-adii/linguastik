@@ -41,12 +41,100 @@ chrome.storage.sync.get(['serperApiKey', 'lingoApiKey', 'userLanguage', 'preferr
     const enabled = result.enabled !== undefined ? result.enabled : true;
     (document.getElementById('enabled') as HTMLInputElement).checked = enabled;
 
-    // Vision Button State
     if (result.visionEnabled && eyeBtn) {
         eyeBtn.classList.add('active');
         if (visionContainer) visionContainer.style.display = 'flex';
     }
+
+    const initialLang = result.preferredLanguage === 'auto' ? 'en' : result.preferredLanguage || 'en';
+    if (initialLang !== 'en') {
+        translateUI(initialLang, result.lingoApiKey);
+    }
 });
+
+async function translateUI(targetLang: string, apiKey: string) {
+    if (!apiKey) return;
+
+    const elements = document.querySelectorAll('[data-i18n]');
+    const textsToTranslate: { key: string, text: string }[] = [];
+
+    elements.forEach(el => {
+        const key = el.getAttribute('data-i18n');
+
+        if (!el.getAttribute('data-original-text')) {
+            const currentText = el.textContent?.trim();
+            if (currentText) {
+                el.setAttribute('data-original-text', currentText);
+            }
+        }
+
+        const text = el.getAttribute('data-original-text');
+        if (key && text) {
+            textsToTranslate.push({ key, text });
+        }
+    });
+
+    if (textsToTranslate.length === 0) return;
+    const cacheKey = `lingo_ui_cache_v2_${targetLang}`;
+    const cached = localStorage.getItem(cacheKey);
+    let cache = cached ? JSON.parse(cached) : {};
+
+    const needsTranslation = textsToTranslate.filter(item => !cache[item.key]);
+
+    if (needsTranslation.length > 0) {
+        await Promise.all(needsTranslation.map(async (item) => {
+            try {
+                console.log(`[translateUI] Fetching translation for: "${item.text}"`);
+                const response = await fetch('https://engine.lingo.dev/i18n', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        "params": {
+                            "workflowId": crypto.randomUUID(),
+                            "fast": true
+                        },
+                        "locale": {
+                            "source": "en",
+                            "target": targetLang
+                        },
+                        "data": {
+                            "text": item.text
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    console.error(`[translateUI] API Error: ${response.status} ${response.statusText}`);
+                    const errText = await response.text();
+                    console.error(`[translateUI] API Error Body:`, errText);
+                    return;
+                }
+
+                const jsonResponse = await response.json();
+                console.log(`[translateUI] API Response for "${item.key}":`, jsonResponse);
+
+                const translation = jsonResponse.data?.text;
+                if (translation) {
+                    cache[item.key] = translation;
+                }
+            } catch (error) {
+                console.error('Translation failed for', item.key, error);
+            }
+        }));
+
+        localStorage.setItem(cacheKey, JSON.stringify(cache));
+    }
+
+    elements.forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (key && cache[key]) {
+            el.textContent = cache[key];
+        }
+    });
+}
 
 document.getElementById('saveBtn')?.addEventListener('click', () => {
     const serperApiKey = (document.getElementById('serperApiKey') as HTMLInputElement).value;
@@ -63,10 +151,22 @@ document.getElementById('saveBtn')?.addEventListener('click', () => {
         preferredLanguage,
         enabled,
         visionEnabled
-    }, () => {
+    }, async () => {
+        // Trigger translation on save if language changed
+        const targetLang = preferredLanguage === 'auto' ? 'en' : preferredLanguage;
+        if (targetLang !== 'en') {
+            await translateUI(targetLang, lingoApiKey);
+        } else {
+            // If switching back to English/Auto, we reload to reset UI
+            location.reload();
+            return;
+        }
+
         const status = document.getElementById('status');
+        const settingsSavedMsg = document.getElementById('msgSettingsSaved')?.textContent || 'Settings Saved!';
+
         if (status) {
-            status.textContent = 'Settings Saved!';
+            status.textContent = settingsSavedMsg;
             setTimeout(() => status.textContent = '', 2000);
         }
     });

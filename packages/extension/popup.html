@@ -64,29 +64,29 @@
 </head>
 
 <body>
-    <h1>Linguastik Lens</h1>
+    <h1 data-i18n="title">Linguastik Lens</h1>
 
-    <label>Serper.dev API Key</label>
+    <label data-i18n="serperKey">Serper.dev API Key</label>
     <input type="password" id="serperApiKey" placeholder="Enter key...">
 
-    <label>Lingo.dev API Key</label>
+    <label data-i18n="lingoKey">Lingo.dev API Key</label>
     <input type="password" id="lingoApiKey" placeholder="Enter key...">
 
     <div style="display: flex; gap: 10px;">
         <div style="flex: 1;">
-            <label>Target Language</label>
+            <label data-i18n="targetLang">Target Language</label>
             <select id="userLanguage">
-                <option value="en">English</option>
-                <option value="es">Spanish</option>
-                <option value="ja">Japanese</option>
-                <option value="de">German</option>
-                <option value="fr">French</option>
+                <option value="en" data-i18n="lang_en">English</option>
+                <option value="es" data-i18n="lang_es">Spanish</option>
+                <option value="ja" data-i18n="lang_ja">Japanese</option>
+                <option value="de" data-i18n="lang_de">German</option>
+                <option value="fr" data-i18n="lang_fr">French</option>
             </select>
         </div>
         <div style="flex: 1;">
-            <label>User Language</label>
+            <label data-i18n="userLang">User Language</label>
             <select id="preferredLanguage">
-                <option value="auto">Auto (Default)</option>
+                <option value="auto" data-i18n="autoDefault">Auto (Default)</option>
                 <option value="en">English</option>
                 <option value="es">Español</option>
                 <option value="ja">日本語</option>
@@ -97,12 +97,13 @@
     </div>
 
     <div style="margin-top: 20px; display: flex; align-items: center; justify-content: space-between;">
-        <label for="enabled" style="margin: 0; cursor: pointer;">Enable Analysis</label>
+        <label for="enabled" style="margin: 0; cursor: pointer;" data-i18n="enableAnalysis">Enable Analysis</label>
         <input type="checkbox" id="enabled" style="width: auto; margin: 0;">
     </div>
 
-    <button id="saveBtn">Save Settings</button>
+    <button id="saveBtn" data-i18n="saveSettings">Save Settings</button>
     <div class="status" id="status"></div>
+    <span id="msgSettingsSaved" data-i18n="msgSettingsSaved" style="display: none;">Settings Saved!</span>
 
     <button id="eyeBtn" class="eye-btn" title="View Details">
         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
@@ -252,9 +253,9 @@
     <div id="visionContainer" class="vision-container">
         <div id="visionEmptyState"
             style="display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%;">
-            <div class="vision-text">Vision Mode Active</div>
-            <div class="vision-subtext">Drag & Drop Image</div>
-            <button id="visionUploadBtn" class="vision-upload-btn">Upload Image</button>
+            <div class="vision-text" data-i18n="visionActive">Vision Mode Active</div>
+            <div class="vision-subtext" data-i18n="dragDrop">Drag & Drop Image</div>
+            <button id="visionUploadBtn" class="vision-upload-btn" data-i18n="uploadImg">Upload Image</button>
         </div>
 
         <div id="visionPreviewState" class="vision-preview">
