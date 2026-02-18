@@ -158,13 +158,20 @@ document.addEventListener('keyup', (e) => {
     }
 });
 
-document.addEventListener('mousedown', (e) => {
-    setTimeout(() => {
-        const selection = window.getSelection();
-        if (!selection || selection.toString().trim().length === 0) {
-            removeFloatingButton();
-        }
-    }, 10);
+document.addEventListener('scroll', () => {
+    removeFloatingButton();
+}, true);
+
+document.addEventListener('selectionchange', () => {
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed) {
+        removeFloatingButton();
+    }
+    removeFloatingButton();
+});
+
+document.addEventListener('resize', () => {
+    removeFloatingButton();
 });
 
 function handleSelection() {
@@ -200,6 +207,11 @@ function showFloatingButton(x: number, y: number, text: string) {
 
     floatingBtn.style.left = `${finalX}px`;
     floatingBtn.style.top = `${y}px`;
+
+    floatingBtn.onmousedown = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
 
     floatingBtn.onclick = (e) => {
         e.stopPropagation();
