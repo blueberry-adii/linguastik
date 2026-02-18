@@ -24,7 +24,7 @@ export class ConfigManager {
     public async load(): Promise<LinguastikConfig> {
         return new Promise((resolve) => {
             chrome.storage.sync.get(['serperApiKey', 'lingoApiKey', 'userLanguage', 'enabled'], (items) => {
-                console.log('Config Shim Loaded Items:', items);
+                // console.log('Config Shim Loaded Items:', items); // REMOVED FOR SECURITY
                 this.config = {
                     ...defaultConfig,
                     serperApiKey: items.serperApiKey || process.env.SERPER_API_KEY || '',

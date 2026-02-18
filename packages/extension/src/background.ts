@@ -29,13 +29,15 @@ async function handleSearch(query: string, tabId: number) {
 
     try {
         const config = await configManager.load();
+        /* 
         console.log('Background Loaded Config:', {
             hasSerper: !!config.serperApiKey,
-            serperKeyStart: config.serperApiKey ? config.serperApiKey.substring(0, 4) + '...' : 'MISSING',
+            // serperKeyStart: config.serperApiKey ? config.serperApiKey.substring(0, 4) + '...' : 'MISSING',
             hasLingo: !!config.lingoApiKey,
-            lingoKeyStart: config.lingoApiKey ? config.lingoApiKey.substring(0, 4) + '...' : 'MISSING',
+            // lingoKeyStart: config.lingoApiKey ? config.lingoApiKey.substring(0, 4) + '...' : 'MISSING',
             lang: config.userLanguage
-        });
+        }); 
+        */
         const userLang = config.userLanguage || 'es';
 
         const detectedLang = await translator.detectLanguage(query);
