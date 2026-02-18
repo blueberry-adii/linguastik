@@ -344,4 +344,65 @@ h2 {
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
+
+/* Left Sidebar for Quick Translations */
+.sidebar-left {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 380px;
+    height: 100vh;
+    background: #0F0F12;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    color: #E2E2E2;
+    z-index: 2147483647;
+    box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translateX(-100%);
+    backdrop-filter: blur(10px);
+}
+
+.sidebar-left.visible {
+    transform: translateX(0);
+}
+
+/* Left Toggle Button */
+.toggle-btn-left {
+    position: fixed;
+    top: 120px;
+    left: 0;
+    background: #0F0F12;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: none;
+    color: #00E5FF;
+    padding: 10px 8px;
+    border-radius: 0 8px 8px 0;
+    cursor: pointer;
+    z-index: 2147483646;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: none; /* Hidden by default until used */
+    align-items: center;
+    justify-content: center;
+    transform: translateX(0);
+}
+
+.toggle-btn-left:hover {
+    padding-left: 12px;
+    background: rgba(15, 15, 18, 0.95);
+}
+
+.sidebar-left.visible ~ .toggle-btn-left {
+    transform: translateX(-100%);
+}
+
+.toggle-btn-left svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+}
 `;
