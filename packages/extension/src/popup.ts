@@ -26,4 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    document.getElementById('eyeBtn')?.addEventListener('click', () => {
+        console.log('Eye button clicked');
+    });
 });
