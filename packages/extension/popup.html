@@ -119,7 +119,63 @@
             color: #00E5FF;
             border: 1px solid rgba(0, 229, 255, 0.3);
         }
+
+        .vision-container {
+            margin-top: 16px;
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 24px 16px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.02);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+
+        .vision-container.drag-over {
+            border-color: #00E5FF;
+            background: rgba(0, 229, 255, 0.05);
+        }
+
+        .vision-text {
+            color: #00E5FF;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .vision-subtext {
+            color: #666;
+            font-size: 10px;
+        }
+
+        .vision-upload-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #E2E2E2;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-top: 4px;
+            cursor: pointer;
+            width: auto;
+        }
+
+        .vision-upload-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
     </style>
+
+    <div id="visionContainer" class="vision-container">
+        <div class="vision-text">Vision Mode Active</div>
+        <div class="vision-subtext">Drag & Drop Image</div>
+        <button id="visionUploadBtn" class="vision-upload-btn">Upload Image</button>
+        <input type="file" id="visionInput" accept="image/*" style="display: none;">
+    </div>
 
     <script src="popup.js"></script>
 </body>
