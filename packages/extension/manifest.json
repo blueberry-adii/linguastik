@@ -9,10 +9,8 @@
     "scripting"
   ],
   "host_permissions": [
-    "https://www.google.com/*",
-    "https://google.serper.dev/*",
-    "https://api.lingo.dev/*",
-    "https://engine.lingo.dev/*"
+    "https://*/*",
+    "http://*/*"
   ],
   "background": {
     "service_worker": "background.js",
@@ -21,7 +19,7 @@
   "content_scripts": [
     {
       "matches": [
-        "https://www.google.com/*"
+        "<all_urls>"
       ],
       "js": [
         "content.js"
