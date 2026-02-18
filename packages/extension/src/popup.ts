@@ -3,6 +3,34 @@ const visionContainer = document.getElementById('visionContainer');
 const visionUploadBtn = document.getElementById('visionUploadBtn');
 const visionInput = document.getElementById('visionInput') as HTMLInputElement;
 
+const visionEmptyState = document.getElementById('visionEmptyState');
+const visionPreviewState = document.getElementById('visionPreviewState');
+const visionPreviewImg = document.getElementById('visionPreviewImg') as HTMLImageElement;
+const visionFileName = document.getElementById('visionFileName');
+const visionClearBtn = document.getElementById('visionClearBtn');
+
+function handleFileSelection(file: File) {
+    if (!file.type.startsWith('image/')) {
+        console.error('Invalid file type');
+        return;
+    }
+
+    console.log('File selected:', file.name);
+
+    if (visionEmptyState) visionEmptyState.style.display = 'none';
+    if (visionPreviewState) visionPreviewState.style.display = 'flex';
+
+    if (visionFileName) visionFileName.textContent = file.name;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        if (visionPreviewImg && e.target?.result) {
+            visionPreviewImg.src = e.target.result as string;
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
 chrome.storage.sync.get(['serperApiKey', 'lingoApiKey', 'userLanguage', 'enabled', 'visionEnabled'], (result) => {
     if (result.serperApiKey) (document.getElementById('serperApiKey') as HTMLInputElement).value = result.serperApiKey;
     if (result.lingoApiKey) (document.getElementById('lingoApiKey') as HTMLInputElement).value = result.lingoApiKey;
@@ -52,10 +80,14 @@ visionUploadBtn?.addEventListener('click', () => {
 
 visionInput?.addEventListener('change', (e) => {
     const file = (e.target as HTMLInputElement).files?.[0];
-    if (file) {
-        console.log('File selected:', file.name);
-        // File upload logic
-    }
+    if (file) handleFileSelection(file);
+});
+
+visionClearBtn?.addEventListener('click', () => {
+    if (visionInput) visionInput.value = '';
+    if (visionPreviewState) visionPreviewState.style.display = 'none';
+    if (visionEmptyState) visionEmptyState.style.display = 'flex';
+    if (visionPreviewImg) visionPreviewImg.src = '';
 });
 
 if (visionContainer) {
@@ -72,10 +104,7 @@ if (visionContainer) {
         e.preventDefault();
         visionContainer.classList.remove('drag-over');
         const file = e.dataTransfer?.files[0];
-        if (file) {
-            console.log('File dropped:', file.name);
-            // Dropped file logic
-        }
+        if (file) handleFileSelection(file);
     });
 }
 

@@ -168,12 +168,84 @@
             background: rgba(255, 255, 255, 0.15);
             border-color: rgba(255, 255, 255, 0.2);
         }
+
+        .vision-preview {
+            display: none;
+            width: 100%;
+            height: 40px;
+            background: #222;
+            border-radius: 4px;
+            position: relative;
+            align-items: center;
+            padding: 0 10px;
+            box-sizing: border-box;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .vision-preview img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.4;
+            z-index: 0;
+        }
+
+        .vision-file-name {
+            position: relative;
+            z-index: 1;
+            font-size: 11px;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 85%;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        .vision-clear-btn {
+            position: absolute;
+            right: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 2;
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            color: #fff;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .vision-clear-btn:hover {
+            background: rgba(255, 59, 48, 0.8);
+        }
     </style>
 
     <div id="visionContainer" class="vision-container">
-        <div class="vision-text">Vision Mode Active</div>
-        <div class="vision-subtext">Drag & Drop Image</div>
-        <button id="visionUploadBtn" class="vision-upload-btn">Upload Image</button>
+        <div id="visionEmptyState"
+            style="display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%;">
+            <div class="vision-text">Vision Mode Active</div>
+            <div class="vision-subtext">Drag & Drop Image</div>
+            <button id="visionUploadBtn" class="vision-upload-btn">Upload Image</button>
+        </div>
+
+        <div id="visionPreviewState" class="vision-preview">
+            <img id="visionPreviewImg" src="" alt="Preview">
+            <span id="visionFileName" class="vision-file-name">filename.jpg</span>
+            <button id="visionClearBtn" class="vision-clear-btn">&times;</button>
+        </div>
+
         <input type="file" id="visionInput" accept="image/*" style="display: none;">
     </div>
 
