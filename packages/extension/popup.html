@@ -72,14 +72,29 @@
     <label>Lingo.dev API Key</label>
     <input type="password" id="lingoApiKey" placeholder="Enter key...">
 
-    <label>Target Language</label>
-    <select id="userLanguage">
-        <option value="en">English</option>
-        <option value="es">Spanish</option>
-        <option value="ja">Japanese</option>
-        <option value="de">German</option>
-        <option value="fr">French</option>
-    </select>
+    <div style="display: flex; gap: 10px;">
+        <div style="flex: 1;">
+            <label>Target Language</label>
+            <select id="userLanguage">
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="ja">Japanese</option>
+                <option value="de">German</option>
+                <option value="fr">French</option>
+            </select>
+        </div>
+        <div style="flex: 1;">
+            <label>User Language</label>
+            <select id="preferredLanguage">
+                <option value="auto">Auto (Default)</option>
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="ja">Japanese</option>
+                <option value="de">German</option>
+                <option value="fr">French</option>
+            </select>
+        </div>
+    </div>
 
     <div style="margin-top: 20px; display: flex; align-items: center; justify-content: space-between;">
         <label for="enabled" style="margin: 0; cursor: pointer;">Enable Analysis</label>

@@ -51,14 +51,13 @@ async function handleSearch(query: string, tabId: number) {
         }); 
         */
         const userLang = config.userLanguage || 'es';
+        const preferredLang = config.preferredLanguage || 'auto';
 
         const detectedLang = await translator.detectLanguage(query);
         console.log(`Detected Query Language: ${detectedLang}`);
 
-        if (detectedLang && detectedLang !== 'en') {
-            console.log(`Updating User Language Preference to: ${detectedLang}`);
-            configManager.set('userLanguage', detectedLang);
-        }
+        const outputLang = (preferredLang === 'auto' ? detectedLang : preferredLang) || 'en';
+        console.log(`Output Language: ${outputLang} (Preferred: ${preferredLang})`);
 
         console.log('Determining relevant regions...');
         let regions = await translator.determineRelevantLanguages(query, userLang);
@@ -88,13 +87,13 @@ async function handleSearch(query: string, tabId: number) {
 
         const aggregated = aggregateResults(resultsMap);
 
-        console.log(`Translating top results to ${detectedLang}...`);
+        console.log(`Translating top results to ${outputLang}...`);
         const topResultsToTranslate = aggregated.combined.slice(0, 5);
 
         await Promise.all(topResultsToTranslate.map(async (result, idx) => {
             try {
                 console.log(`[Translate Source ${idx}] Original: "${result.title}"`);
-                const translatedTitle = await translator.translate(result.title, detectedLang);
+                const translatedTitle = await translator.translate(result.title, outputLang);
                 console.log(`[Translate Source ${idx}] Translated: "${translatedTitle}"`);
 
                 if (translatedTitle) {
@@ -110,7 +109,7 @@ async function handleSearch(query: string, tabId: number) {
         const topSnippets = aggregated.combined.slice(0, 5).map(r => r.snippet);
         let summary = "Summary unavailable.";
         try {
-            summary = await translator.generateSummary(topSnippets, detectedLang || userLang);
+            summary = await translator.generateSummary(topSnippets, outputLang);
         } catch (error: any) {
             console.error('Summary generation failed:', error);
             if (error.message.includes('Lingo API Key is missing')) {
