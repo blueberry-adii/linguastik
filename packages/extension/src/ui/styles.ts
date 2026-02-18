@@ -300,4 +300,48 @@ h2 {
     height: 16px;
     fill: currentColor;
 }
+/* Floating Popup */
+.linguastik-popup {
+    position: absolute;
+    z-index: 2147483647;
+    background: #0F0F12;
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    color: #E2E2E2;
+    font-size: 14px;
+    min-width: 200px;
+    max-width: 300px;
+    animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.linguastik-popup-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.linguastik-popup-content {
+    line-height: 1.5;
+    color: #FFF;
+}
+
+.linguastik-popup-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.1);
+    border-top-color: #00E5FF;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
 `;
