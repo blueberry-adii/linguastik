@@ -39,6 +39,17 @@ function handleNewSearch(query: string) {
         query: query,
     });
     createSidebarIfNeeded(query);
+
+    const host = document.getElementById('linguastik-lens-host');
+    if (host && host.shadowRoot) {
+        const sidebar = host.shadowRoot.querySelector('.sidebar');
+        sidebar?.classList.add('visible');
+
+        const content = host.shadowRoot.getElementById('result-content');
+        if (content) {
+            content.innerHTML = renderLoading(query);
+        }
+    }
 }
 
 function createSidebarIfNeeded(query: string = '') {
@@ -64,7 +75,7 @@ function createSidebarIfNeeded(query: string = '') {
     shadow.appendChild(styleEl);
 
     const container = document.createElement('div');
-    container.className = 'sidebar visible';
+    container.className = query ? 'sidebar visible' : 'sidebar';
     container.style.pointerEvents = 'auto';
 
     container.innerHTML = `
@@ -82,25 +93,30 @@ function createSidebarIfNeeded(query: string = '') {
     `;
     shadow.appendChild(container);
 
-    // Toggle Button
-    const toggleBtn = document.createElement('button');
-    toggleBtn.className = 'toggle-btn';
-    toggleBtn.innerHTML = `
-        <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
-    `;
-    toggleBtn.title = "Open Linguastik Lens";
-    toggleBtn.style.pointerEvents = 'auto';
-    shadow.appendChild(toggleBtn);
+    // Toggle Button ( Only show if this is a persistent search page (URL has query) )
+    const pageQuery = getQueryFromURL();
+    if (pageQuery) {
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'toggle-btn';
+        toggleBtn.innerHTML = `
+            <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+        `;
+        toggleBtn.title = "Open Linguastik Lens";
+        toggleBtn.style.pointerEvents = 'auto';
+        shadow.appendChild(toggleBtn);
+
+        // Toggle Handler
+        toggleBtn.addEventListener('click', () => {
+            container.classList.add('visible');
+        });
+    }
 
     // Close Handler
     container.querySelector('.close-btn')?.addEventListener('click', () => {
         container.classList.remove('visible');
     });
 
-    // Toggle Handler
-    toggleBtn.addEventListener('click', () => {
-        container.classList.add('visible');
-    });
+
 }
 
 chrome.runtime.onMessage.addListener((message) => {
