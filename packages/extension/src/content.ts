@@ -129,3 +129,77 @@ chrome.runtime.onMessage.addListener((message) => {
         }
     }
 });
+
+let floatingBtn: HTMLElement | null = null;
+
+document.addEventListener('mouseup', (e) => {
+    handleSelection();
+});
+
+document.addEventListener('keyup', (e) => {
+    if (e.key === 'Shift' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        handleSelection();
+    }
+});
+
+document.addEventListener('mousedown', (e) => {
+    setTimeout(() => {
+        const selection = window.getSelection();
+        if (!selection || selection.toString().trim().length === 0) {
+            removeFloatingButton();
+        }
+    }, 10);
+});
+
+function handleSelection() {
+    const selection = window.getSelection();
+    const text = selection?.toString().trim();
+
+    if (text && text.length > 0) {
+        const range = selection!.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        showFloatingButton(rect.left + (rect.width / 2), rect.bottom + 10, text);
+    } else {
+        removeFloatingButton();
+    }
+}
+
+function showFloatingButton(x: number, y: number, text: string) {
+    createSidebarIfNeeded();
+    const host = document.getElementById('linguastik-lens-host');
+    if (!host || !host.shadowRoot) return;
+
+    if (!floatingBtn) {
+        floatingBtn = document.createElement('div');
+        floatingBtn.className = 'linguastik-floating-btn';
+        floatingBtn.innerHTML = `
+            <svg viewBox="0 0 24 24"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.09-.09 2.54-2.51.13.56zm5.66-2.54l-2.53 7L14 19l4.5 9H20l1.25-3.5h5.5L28 28h1.5l4.5-9h-1.97l-2.53-7H18.53zM22.5 22h-3l1.5-4.25L22.5 22z"/></svg>
+        `;
+        host.shadowRoot.appendChild(floatingBtn);
+    }
+
+    const btnWidth = 110;
+    const finalX = Math.max(10, Math.min(window.innerWidth - btnWidth - 10, x - (btnWidth / 2)));
+    const finalY = y + window.scrollY;
+
+    floatingBtn.style.left = `${finalX}px`;
+    floatingBtn.style.top = `${y}px`;
+
+    floatingBtn.onclick = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const sidebar = host.shadowRoot!.querySelector('.sidebar');
+        sidebar?.classList.add('visible');
+
+        handleNewSearch(text);
+        removeFloatingButton();
+    };
+}
+
+function removeFloatingButton() {
+    if (floatingBtn) {
+        floatingBtn.remove();
+        floatingBtn = null;
+    }
+}
