@@ -8,6 +8,7 @@
         "watch": "node build.js --watch"
     },
     "dependencies": {
+        "@google/genai": "^1.42.0",
         "@linguastik/shared": "^1.0.0",
         "lingo.dev": "^0.116.5"
     },

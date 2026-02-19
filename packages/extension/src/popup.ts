@@ -25,15 +25,89 @@ function handleFileSelection(file: File) {
     const reader = new FileReader();
     reader.onload = (e) => {
         if (visionPreviewImg && e.target?.result) {
-            visionPreviewImg.src = e.target.result as string;
+            const result = e.target.result as string;
+            visionPreviewImg.src = result;
+
+            processImage(result);
         }
     };
     reader.readAsDataURL(file);
 }
 
-chrome.storage.sync.get(['serperApiKey', 'lingoApiKey', 'userLanguage', 'preferredLanguage', 'enabled', 'visionEnabled'], (result) => {
+function processImage(dataUrl: string) {
+    const img = new Image();
+    img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 800;
+
+        if (width > maxDim || height > maxDim) {
+            if (width > height) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+            } else {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+            }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        const base64Data = compressedDataUrl.split(',')[1];
+
+        chrome.storage.sync.get(['geminiApiKey'], (result) => {
+            if (result.geminiApiKey) {
+                if (visionFileName) visionFileName.textContent = 'Analyzing...';
+
+                chrome.runtime.sendMessage({
+                    type: 'IDENTIFY_OBJECT',
+                    payload: {
+                        image: base64Data,
+                        apiKey: result.geminiApiKey
+                    }
+                }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        console.error('Error sending message:', chrome.runtime.lastError);
+                        if (visionFileName) visionFileName.textContent = 'Error: ' + chrome.runtime.lastError.message;
+                        return;
+                    }
+
+                    if (response && response.success) {
+                        console.log('Gemini Analysis:', response.data);
+                        if (visionFileName) {
+                            const objectName = response.data.object;
+                            const confidence = Math.round(response.data.confidence * 100);
+                            visionFileName.innerHTML = `<strong>${objectName}</strong> <span style="font-size: 0.9em; opacity: 0.8;">(${confidence}%)</span>`;
+                        }
+                    } else {
+                        console.error('Gemini Error:', response?.error);
+                        if (visionFileName) {
+                            visionFileName.textContent = `Analysis Failed: ${response?.error || 'Unknown error'}`;
+                            visionFileName.title = response?.error || '';
+                        }
+                    }
+                });
+            } else {
+                if (visionFileName) visionFileName.textContent = 'Missing Gemini API Key';
+            }
+        });
+    };
+    img.onerror = (err) => {
+        console.error('Image load failed:', err);
+        if (visionFileName) visionFileName.textContent = 'Image Load Error';
+    };
+    img.src = dataUrl;
+}
+
+chrome.storage.sync.get(['serperApiKey', 'lingoApiKey', 'geminiApiKey', 'userLanguage', 'preferredLanguage', 'enabled', 'visionEnabled'], (result) => {
     if (result.serperApiKey) (document.getElementById('serperApiKey') as HTMLInputElement).value = result.serperApiKey;
     if (result.lingoApiKey) (document.getElementById('lingoApiKey') as HTMLInputElement).value = result.lingoApiKey;
+    if (result.geminiApiKey) (document.getElementById('geminiApiKey') as HTMLInputElement).value = result.geminiApiKey;
     if (result.userLanguage) (document.getElementById('userLanguage') as HTMLSelectElement).value = result.userLanguage;
     const preferredLang = result.preferredLanguage || 'auto';
     (document.getElementById('preferredLanguage') as HTMLSelectElement).value = preferredLang;
@@ -149,6 +223,7 @@ async function translateUI(targetLang: string, apiKey: string) {
 document.getElementById('saveBtn')?.addEventListener('click', () => {
     const serperApiKey = (document.getElementById('serperApiKey') as HTMLInputElement).value;
     const lingoApiKey = (document.getElementById('lingoApiKey') as HTMLInputElement).value;
+    const geminiApiKey = (document.getElementById('geminiApiKey') as HTMLInputElement).value;
     const userLanguage = (document.getElementById('userLanguage') as HTMLSelectElement).value;
     const preferredLanguage = (document.getElementById('preferredLanguage') as HTMLSelectElement).value;
     const enabled = (document.getElementById('enabled') as HTMLInputElement).checked;
@@ -157,6 +232,7 @@ document.getElementById('saveBtn')?.addEventListener('click', () => {
     chrome.storage.sync.set({
         serperApiKey,
         lingoApiKey,
+        geminiApiKey,
         userLanguage,
         preferredLanguage,
         enabled,

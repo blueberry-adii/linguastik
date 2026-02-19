@@ -1,6 +1,7 @@
 export interface LinguastikConfig {
     serperApiKey?: string;
     lingoApiKey?: string;
+    geminiApiKey?: string;
     userLanguage?: string;
     preferredLanguage?: string;
     enabled?: boolean;
@@ -9,6 +10,7 @@ export interface LinguastikConfig {
 const defaultConfig: LinguastikConfig = {
     serperApiKey: '',
     lingoApiKey: '',
+    geminiApiKey: '',
     userLanguage: 'en',
     preferredLanguage: 'auto',
     enabled: true
@@ -25,12 +27,13 @@ export class ConfigManager {
 
     public async load(): Promise<LinguastikConfig> {
         return new Promise((resolve) => {
-            chrome.storage.sync.get(['serperApiKey', 'lingoApiKey', 'userLanguage', 'preferredLanguage', 'enabled'], (items) => {
+            chrome.storage.sync.get(['serperApiKey', 'lingoApiKey', 'geminiApiKey', 'userLanguage', 'preferredLanguage', 'enabled'], (items) => {
                 // console.log('Config Shim Loaded Items:', items); // REMOVED FOR SECURITY
                 this.config = {
                     ...defaultConfig,
                     serperApiKey: items.serperApiKey || process.env.SERPER_API_KEY || '',
                     lingoApiKey: items.lingoApiKey || process.env.LINGO_API_KEY || '',
+                    geminiApiKey: items.geminiApiKey || process.env.GEMINI_API_KEY || '',
                     userLanguage: items.userLanguage || defaultConfig.userLanguage,
                     preferredLanguage: items.preferredLanguage || defaultConfig.preferredLanguage,
                     enabled: items.enabled !== undefined ? items.enabled : defaultConfig.enabled

@@ -26,6 +26,65 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             .then(result => sendResponse({ success: true, ...result }))
             .catch(err => sendResponse({ success: false, error: err.message }));
         return true;
+    } else if (message.type === 'IDENTIFY_OBJECT') {
+        const { image, apiKey } = message.payload;
+        if (!image || !apiKey) {
+            sendResponse({ success: false, error: 'Missing image or API key' });
+            return true;
+        }
+
+        (async () => {
+            try {
+                const { GoogleGenAI } = await import('@google/genai');
+
+                const client = new GoogleGenAI({ apiKey });
+
+                let response;
+                try {
+                    response = await client.models.generateContent({
+                        model: 'gemini-2.5-flash', 
+                        contents: [
+                            {
+                                role: 'user',
+                                parts: [
+                                    { text: "Identify the main object in this image. Return ONLY a JSON object with two keys: 'object' (a short string name) and 'confidence' (a number between 0 and 1). Do not include markdown formatting." },
+                                    { inlineData: { mimeType: "image/jpeg", data: image } }
+                                ]
+                            }
+                        ]
+                    });
+                } catch (genError: any) {
+                    if (genError.message && genError.message.includes('404') && genError.message.includes('not found')) {
+                        console.log('Model not found. Listing available models...');
+                        try {
+                            const models = await client.models.list();
+                            console.log('Available Models:', JSON.stringify(models));
+                        } catch (listError) {
+                            console.error('Failed to list models:', listError);
+                        }
+                    }
+                    throw genError;
+                }
+
+                let text = '';
+                if (response.candidates && response.candidates[0] && response.candidates[0].content && response.candidates[0].content.parts) {
+                    text = response.candidates[0].content.parts.map((p: any) => p.text).join('');
+                } else {
+                    console.log('Gemini Response Structure:', JSON.stringify(response));
+                    throw new Error('Unexpected response format');
+                }
+
+                const jsonStr = text.replace(/```json\n?|\n?```/g, '').trim();
+                const data = JSON.parse(jsonStr);
+                sendResponse({ success: true, data });
+
+            } catch (err: any) {
+                console.error('Gemini SDK Error:', err);
+                sendResponse({ success: false, error: err.message || 'SDK Error' });
+            }
+        })();
+
+        return true;
     }
 });
 
