@@ -3,6 +3,11 @@ import { renderSidebar, renderLoading, renderError } from './ui/sidebar';
 
 console.log('Linguastik Lens Content Script Loaded');
 
+if ((window as any).hasLingoContentScriptLoaded) {
+    console.log('Linguastik Lens Content Script already loaded. Skipping initialization.');
+}
+(window as any).hasLingoContentScriptLoaded = true;
+
 function getQueryFromURL() {
     const params = new URLSearchParams(window.location.search);
     return params.get("q") || "";
@@ -155,7 +160,7 @@ function createSidebarIfNeeded(query: string = '') {
 
 }
 
-chrome.runtime.onMessage.addListener((message) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === "SEARCH_RESULTS") {
         const host = document.getElementById('linguastik-lens-host');
         if (host && host.shadowRoot) {
@@ -191,6 +196,8 @@ chrome.runtime.onMessage.addListener((message) => {
                 content.innerHTML = renderLoading(message.query);
             }
         }
+        sendResponse({ received: true });
+        return true;
     }
 });
 
