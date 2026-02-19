@@ -4,6 +4,7 @@ import fs from 'fs';
 import dotenv from 'dotenv';
 import { z } from 'zod';
 
+process.env.DOTENV_CONFIG_QUIET = 'true';
 dotenv.config();
 
 const CONFIG_DIR = path.join(os.homedir(), '.lingo-dev');
