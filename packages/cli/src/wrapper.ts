@@ -20,19 +20,31 @@ export async function execWithTranslation(command: string, args: string[]) {
 
         const pendingTranslations: Promise<void>[] = [];
 
+        let spinner = format.spinner(`Running ${command}...`).start();
+
         const processLine = async (line: string, isStderr: boolean) => {
             try {
                 const translated = await limit(() => translator.translate(line));
                 const output = (translated && translated.trim().length > 0) ? translated : line;
+
+                // Stop spinner to print line, then restart if process is still active
+                spinner.stop();
 
                 if (isStderr) {
                     process.stderr.write(output + '\n');
                 } else {
                     process.stdout.write(output + '\n');
                 }
+
+                if (child.exitCode === null) {
+                    spinner.start('Translating...');
+                }
+
             } catch (e) {
+                spinner.stop();
                 if (isStderr) process.stderr.write(line + '\n');
                 else process.stdout.write(line + '\n');
+                if (child.exitCode === null) spinner.start('Translating...');
             }
         };
 
@@ -69,13 +81,19 @@ export async function execWithTranslation(command: string, args: string[]) {
         child.on('close', async (code) => {
             if (stdoutBuffer) queueLine(stdoutBuffer, false);
             if (stderrBuffer) queueLine(stderrBuffer, true);
+
+            if (!spinner.isSpinning) spinner.start('Finishing translations...');
+
             await Promise.all(pendingTranslations);
+
+            spinner.stop();
 
             resolve();
             process.exit(code || 0);
         });
 
         child.on('error', (err) => {
+            spinner.stop();
             console.error('Failed to start process:', err);
             reject(err);
         });
