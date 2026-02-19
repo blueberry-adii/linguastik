@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import { createRequire } from 'module';
-import { configManager } from '@linguastik/shared';
+import { configManager, explainer } from '@linguastik/shared';
 import { execWithTranslation } from './wrapper.js';
 import { format } from './formatter.js';
-import { explainer } from '@linguastik/shared';
 
 const require = createRequire(import.meta.url);
 const pkg = require('../package.json');
@@ -69,27 +68,23 @@ program
         } finally {
             if (options.explain && capturedStderr) {
                 console.log('\n--- Error Explanation ---\n');
-                const explanation = explainer.explain(capturedStderr);
+                const explanation = await explainer.explain(capturedStderr);
                 if (explanation) {
-                    const severityColor = explanation.severity === 'error' ? format.error :
-                        explanation.severity === 'warning' ? format.warn : format.info;
-                    console.log(severityColor(`[${explanation.severity.toUpperCase()}] ${explanation.title}`));
-                    console.log(format.dim(`Tool: ${explanation.tool}\n`));
-                    console.log(format.error(`Problem: ${explanation.problem}`));
+                    const severityColor = explanation.severity === 'error' ? 'red' :
+                        explanation.severity === 'warning' ? 'yellow' : 'blue';
 
-                    if (explanation.causes && explanation.causes.length > 0) {
-                        console.log(format.dim('\nPossible causes:'));
-                        explanation.causes.forEach(c => console.log(`  - ${c}`));
-                    }
+                    const content = `
+${format.dim(`Tool: ${explanation.tool}`)}
+${format.error(`Problem: ${explanation.problem}`)}
 
-                    if (explanation.fixes && explanation.fixes.length > 0) {
-                        console.log(format.success('\nSuggested fixes:'));
-                        explanation.fixes.forEach(f => console.log(`  - ${f}`));
-                    }
+${explanation.causes && explanation.causes.length > 0 ? format.dim('Possible causes:') + '\n' + explanation.causes.map(c => `  - ${c}`).join('\n') : ''}
 
-                    if (explanation.learnMoreUrl) {
-                        console.log(format.dim(`\nLearn more: ${explanation.learnMoreUrl}`));
-                    }
+${explanation.fixes && explanation.fixes.length > 0 ? format.success('Suggested fixes:') + '\n' + explanation.fixes.map(f => `  - ${f}`).join('\n') : ''}
+
+${explanation.learnMoreUrl ? format.dim(`Learn more: ${explanation.learnMoreUrl}`) : ''}
+                    `.trim();
+
+                    console.log(format.box(`[${explanation.severity.toUpperCase()}] ${explanation.title}`, content, severityColor));
                 } else {
                     console.log(format.dim('No specific error pattern matched for explanation.'));
                 }

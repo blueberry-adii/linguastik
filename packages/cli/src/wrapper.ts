@@ -1,6 +1,8 @@
 import { spawn } from 'child_process';
 import { translator } from '@linguastik/shared';
 import { pLimit } from "@linguastik/shared";
+import { format } from './formatter.js';
+import { configManager } from '@linguastik/shared';
 
 export async function execWithTranslation(command: string, args: string[]) {
     return new Promise<void>((resolve, reject) => {
@@ -14,31 +16,30 @@ export async function execWithTranslation(command: string, args: string[]) {
 
         const limit = pLimit(5);
 
-        let stdoutQueue = Promise.resolve();
-        let stderrQueue = Promise.resolve();
+        const targetLang = configManager.get().targetLang || 'en';
 
-        const processLine = (line: string, isStderr: boolean) => {
-            const translationTask = limit(() => translator.translate(line));
+        const pendingTranslations: Promise<void>[] = [];
 
-            if (isStderr) {
-                stderrQueue = stderrQueue.then(async () => {
-                    try {
-                        const result = await translationTask;
-                        process.stderr.write(result + '\n');
-                    } catch (err) {
-                        process.stderr.write(line + '\n');
-                    }
-                });
-            } else {
-                stdoutQueue = stdoutQueue.then(async () => {
-                    try {
-                        const result = await translationTask;
-                        process.stdout.write(result + '\n');
-                    } catch (err) {
-                        process.stdout.write(line + '\n');
-                    }
-                });
+        const processLine = async (line: string, isStderr: boolean) => {
+            try {
+                const translated = await limit(() => translator.translate(line));
+                const output = (translated && translated.trim().length > 0) ? translated : line;
+
+                if (isStderr) {
+                    process.stderr.write(output + '\n');
+                } else {
+                    process.stdout.write(output + '\n');
+                }
+            } catch (e) {
+                if (isStderr) process.stderr.write(line + '\n');
+                else process.stdout.write(line + '\n');
             }
+        };
+
+        const queueLine = (line: string, isStderr: boolean) => {
+            if (!line.trim()) return;
+            const p = processLine(line, isStderr);
+            pendingTranslations.push(p);
         };
 
         child.stdout.on('data', (data) => {
@@ -48,7 +49,7 @@ export async function execWithTranslation(command: string, args: string[]) {
                 const lines = stdoutBuffer.split('\n');
                 stdoutBuffer = lines.pop() || '';
                 for (const line of lines) {
-                    processLine(line, false);
+                    queueLine(line, false);
                 }
             }
         });
@@ -60,22 +61,17 @@ export async function execWithTranslation(command: string, args: string[]) {
                 const lines = stderrBuffer.split('\n');
                 stderrBuffer = lines.pop() || '';
                 for (const line of lines) {
-                    processLine(line, true);
+                    queueLine(line, true);
                 }
             }
         });
 
         child.on('close', async (code) => {
-            await Promise.all([stdoutQueue, stderrQueue]);
+            if (stdoutBuffer) queueLine(stdoutBuffer, false);
+            if (stderrBuffer) queueLine(stderrBuffer, true);
+            await Promise.all(pendingTranslations);
 
-            if (stdoutBuffer) {
-                const translated = await translator.translate(stdoutBuffer);
-                process.stdout.write(translated);
-            }
-            if (stderrBuffer) {
-                const translated = await translator.translate(stderrBuffer);
-                process.stderr.write(translated);
-            }
+            resolve();
             process.exit(code || 0);
         });
 
