@@ -50,6 +50,16 @@ chrome.storage.sync.get(['serperApiKey', 'lingoApiKey', 'userLanguage', 'preferr
     if (initialLang !== 'en') {
         translateUI(initialLang, result.lingoApiKey);
     }
+
+    if (localStorage.getItem('show_settings_saved') === 'true') {
+        localStorage.removeItem('show_settings_saved');
+        const status = document.getElementById('status');
+        const settingsSavedMsg = document.getElementById('msgSettingsSaved')?.textContent || 'Settings Saved!';
+        if (status) {
+            status.textContent = settingsSavedMsg;
+            setTimeout(() => status.textContent = '', 2000);
+        }
+    }
 });
 
 async function translateUI(targetLang: string, apiKey: string) {
@@ -157,7 +167,7 @@ document.getElementById('saveBtn')?.addEventListener('click', () => {
         if (targetLang !== 'en') {
             await translateUI(targetLang, lingoApiKey);
         } else {
-            // If switching back to English/Auto, we reload to reset UI
+            localStorage.setItem('show_settings_saved', 'true');
             location.reload();
             return;
         }
