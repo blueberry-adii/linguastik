@@ -179,6 +179,18 @@ chrome.runtime.onMessage.addListener((message) => {
                 content.innerHTML = renderError(message.error);
             }
         }
+    } else if (message.type === "SEARCH_LOADING") {
+        createSidebarIfNeeded(message.query);
+        const host = document.getElementById('linguastik-lens-host');
+        if (host && host.shadowRoot) {
+            const sidebar = host.shadowRoot.querySelector('.sidebar');
+            if (sidebar) sidebar.classList.add('visible');
+
+            const content = host.shadowRoot.getElementById('result-content');
+            if (content) {
+                content.innerHTML = renderLoading(message.query);
+            }
+        }
     }
 });
 

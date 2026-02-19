@@ -8,11 +8,12 @@ console.log('Linguastik Lens Background Service Started');
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'NEW_SEARCH') {
-        if (sender.tab?.id) {
-            handleSearch(message.query, sender.tab.id)
+        const targetTabId = message.tabId || sender.tab?.id;
+        if (targetTabId) {
+            handleSearch(message.query, targetTabId)
                 .catch(err => {
                     console.error('Search handling error:', err);
-                    chrome.tabs.sendMessage(sender.tab!.id!, {
+                    chrome.tabs.sendMessage(targetTabId, {
                         type: 'SEARCH_ERROR',
                         error: err.message
                     });
@@ -42,12 +43,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 let response;
                 try {
                     response = await client.models.generateContent({
-                        model: 'gemini-2.5-flash', 
+                        model: 'gemini-2.5-flash',
                         contents: [
                             {
                                 role: 'user',
                                 parts: [
-                                    { text: "Identify the main object in this image. Return ONLY a JSON object with two keys: 'object' (a short string name) and 'confidence' (a number between 0 and 1). Do not include markdown formatting." },
+                                    { text: "Analyze this image and generate a concise search query to find more information about it on the internet. Return ONLY a JSON object with two keys: 'query' (the search query string) and 'confidence' (a number between 0 and 1). Do not include markdown formatting." },
                                     { inlineData: { mimeType: "image/jpeg", data: image } }
                                 ]
                             }
@@ -99,6 +100,15 @@ async function handleSearch(query: string, tabId: number) {
     console.log(`Processing search: "${query}"`);
 
     try {
+        chrome.tabs.sendMessage(tabId, {
+            type: 'SEARCH_LOADING',
+            query: query
+        });
+    } catch (e) {
+        console.warn('Failed to send loading state:', e);
+    }
+
+    try {
         const config = await configManager.load();
         /* 
         console.log('Background Loaded Config:', {
@@ -120,9 +130,24 @@ async function handleSearch(query: string, tabId: number) {
 
         console.log('Determining relevant regions...');
         let regions = await translator.determineRelevantLanguages(query, userLang);
+
+        if (preferredLang !== 'auto' && preferredLang !== 'en' && preferredLang !== userLang) {
+            const hasPreferred = regions.some(r => r.lang === preferredLang);
+            if (!hasPreferred) {
+                const LANGUAGE_TO_COUNTRY: Record<string, string> = {
+                    'en': 'us', 'ja': 'jp', 'hi': 'in', 'es': 'es', 'fr': 'fr', 'de': 'de',
+                    'it': 'it', 'pt': 'br', 'ru': 'ru', 'zh': 'cn', 'ko': 'kr', 'ar': 'sa'
+                };
+                regions.push({
+                    lang: preferredLang,
+                    country: LANGUAGE_TO_COUNTRY[preferredLang] || 'us'
+                });
+            }
+        }
+
         console.log('Target Regions:', regions);
 
-        regions = regions.slice(0, 3);
+        regions = regions.slice(0, 4);
 
         const translatedQueries = await Promise.all(
             regions.map(r => translator.translate(query, r.lang))

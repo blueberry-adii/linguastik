@@ -80,9 +80,57 @@ function processImage(dataUrl: string) {
                     if (response && response.success) {
                         console.log('Gemini Analysis:', response.data);
                         if (visionFileName) {
-                            const objectName = response.data.object;
-                            const confidence = Math.round(response.data.confidence * 100);
-                            visionFileName.innerHTML = `<strong>${objectName}</strong> <span style="font-size: 0.9em; opacity: 0.8;">(${confidence}%)</span>`;
+                            const query = response.data.query || response.data.object || 'Unknown Object';
+                            const confidence = Math.round((response.data.confidence || 0) * 100);
+                            visionFileName.innerHTML = `<strong>Generating Search:</strong> ${query} <span style="font-size: 0.9em; opacity: 0.8;">(${confidence}%)</span>`;
+
+                            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                                if (tabs[0]?.id) {
+                                    const tabId = tabs[0].id;
+                                    console.log('Target Tab ID:', tabId);
+
+                                    chrome.tabs.sendMessage(tabId, {
+                                        type: 'SEARCH_LOADING',
+                                        query: query
+                                    }, (response) => {
+                                        if (chrome.runtime.lastError) {
+                                            console.warn('Content script not ready. Injecting...', chrome.runtime.lastError);
+
+                                            chrome.scripting.executeScript({
+                                                target: { tabId: tabId },
+                                                files: ['content.js']
+                                            }, () => {
+                                                if (chrome.runtime.lastError) {
+                                                    console.error('Failed to inject content script:', chrome.runtime.lastError);
+                                                } else {
+                                                    console.log('Content script injected. Retrying SEARCH_LOADING...');
+                                                    chrome.tabs.sendMessage(tabId, {
+                                                        type: 'SEARCH_LOADING',
+                                                        query: query
+                                                    });
+                                                }
+                                            });
+                                        } else {
+                                            console.log('SEARCH_LOADING sent directly to tab');
+                                        }
+                                    });
+
+                                    console.log('Sending NEW_SEARCH to background for tab:', tabId);
+                                    chrome.runtime.sendMessage({
+                                        type: 'NEW_SEARCH',
+                                        query: query,
+                                        tabId: tabId
+                                    }, (resp) => {
+                                        if (chrome.runtime.lastError) {
+                                            console.error('Failed to send NEW_SEARCH:', chrome.runtime.lastError);
+                                        } else {
+                                            console.log('NEW_SEARCH sent successfully');
+                                        }
+                                    });
+                                } else {
+                                    console.error('No active tab found to send search');
+                                }
+                            });
                         }
                     } else {
                         console.error('Gemini Error:', response?.error);
