@@ -437,4 +437,55 @@ h2 {
     stroke-width: 2.5;
     fill: none;
 }
+
+/* Sidebar Translation Loading Overlay */
+.translation-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: grayscale(80%) blur(8px);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    border-radius: 0; /* Cover full sidebar */
+}
+
+.translation-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.translation-overlay-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #00E5FF;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+.translation-overlay-text {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    background: linear-gradient(90deg, #00E5FF, #2979FF, #00E5FF);
+    background-size: 200% auto;
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: gradientShine 2s linear infinite;
+}
+
+@keyframes gradientShine {
+    to { background-position: 200% center; }
+}
 `;

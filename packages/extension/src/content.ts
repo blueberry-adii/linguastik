@@ -95,6 +95,10 @@ function createSidebarIfNeeded(query: string = '') {
         <div id="result-content">
             ${renderLoading(query)}
         </div>
+        <div id="sidebarTranslationOverlay" class="translation-overlay">
+            <div class="translation-overlay-spinner"></div>
+            <div class="translation-overlay-text" data-i18n="translatingOverlay">Analyzing...</div>
+        </div>
     `;
     shadow.appendChild(container);
 
@@ -112,6 +116,10 @@ function createSidebarIfNeeded(query: string = '') {
         </header>
         <div id="translation-content" class="content-padding">
             <div class="empty-state">No translations yet</div>
+        </div>
+        <div id="sidebarLeftTranslationOverlay" class="translation-overlay">
+            <div class="translation-overlay-spinner"></div>
+            <div class="translation-overlay-text" data-i18n="translatingOverlay">Translating...</div>
         </div>
     `;
     shadow.appendChild(leftSidebar);
@@ -173,6 +181,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     `<span class="region-tag" title="${r.country}">${r.lang.toUpperCase()}</span>`
                 ).join('');
             }
+            const overlay = host.shadowRoot.getElementById('sidebarTranslationOverlay');
+            if (overlay) overlay.classList.remove('active');
         }
     } else if (message.type === "SEARCH_ERROR") {
         const host = document.getElementById('linguastik-lens-host');
@@ -181,6 +191,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             if (content) {
                 content.innerHTML = renderError(message.error);
             }
+            const overlay = host.shadowRoot.getElementById('sidebarTranslationOverlay');
+            if (overlay) overlay.classList.remove('active');
         }
     } else if (message.type === "SEARCH_LOADING") {
         createSidebarIfNeeded(message.query);
@@ -193,6 +205,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             if (content) {
                 content.innerHTML = renderLoading(message.query);
             }
+
+            const overlay = host.shadowRoot.getElementById('sidebarTranslationOverlay');
+            if (overlay) overlay.classList.add('active');
         }
         sendResponse({ received: true });
         return true;
@@ -292,12 +307,16 @@ function showTranslationInSidebar(text: string) {
 
         content.innerHTML = `
             <div class="linguastik-popup-header">
-                <div class="linguastik-popup-spinner"></div>
                 Translating...
             </div>
         `;
 
+        const overlay = host.shadowRoot.getElementById('sidebarLeftTranslationOverlay');
+        if (overlay) overlay.classList.add('active');
+
         chrome.runtime.sendMessage({ type: 'TRANSLATE_SELECTION', text }, (response) => {
+            if (overlay) overlay.classList.remove('active');
+
             if (response && response.success) {
                 const langName = getLangName(response.lang);
                 content.innerHTML = `
