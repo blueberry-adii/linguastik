@@ -6,7 +6,7 @@ export function renderSidebar(data: {
     summary: string;
     results: AggregatedResults
 }): string {
-    const sourcesHtml = data.results.combined.slice(0, 5).map(r => `
+    const sourcesHtml = data.results.combined.slice(0, 10).map(r => `
         <a href="${r.url}" target="_blank" class="source-item">
             <span class="source-title">${r.title}</span>
             <div class="source-meta">

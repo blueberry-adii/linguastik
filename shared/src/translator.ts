@@ -32,7 +32,7 @@ export class Translator {
             }
 
             const translatedText = await this.lingo.localizeText(text, {
-                sourceLocale: null,
+                sourceLocale: 'auto',
                 targetLocale: targetLang,
             });
 

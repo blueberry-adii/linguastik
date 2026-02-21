@@ -91,7 +91,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 async function handleQuickTranslation(text: string) {
     const config = await configManager.load();
-    const targetLang = config.userLanguage || 'en';
+    const targetLang = config.userLanguage === 'auto' ? 'en' : (config.userLanguage || 'en');
     const translation = await translator.translate(text, targetLang);
     return { translation, lang: targetLang };
 }
@@ -119,38 +119,22 @@ async function handleSearch(query: string, tabId: number) {
             lang: config.userLanguage
         }); 
         */
-        const userLang = config.userLanguage || 'es';
-        const preferredLang = config.preferredLanguage || 'auto';
+        const foreignLang = config.foreignLanguage || 'es';
+        const userLang = config.userLanguage || 'auto';
 
-        const detectedLang = await translator.detectLanguage(query);
-        console.log(`Detected Query Language: ${detectedLang}`);
-
-        const outputLang = (preferredLang === 'auto' ? detectedLang : preferredLang) || 'en';
-        console.log(`Output Language: ${outputLang} (Preferred: ${preferredLang})`);
-
-        console.log('Determining relevant regions...');
-        let regions = await translator.determineRelevantLanguages(query, userLang);
-
-        if (preferredLang !== 'auto' && preferredLang !== 'en' && preferredLang !== userLang) {
-            const hasPreferred = regions.some(r => r.lang === preferredLang);
-            if (!hasPreferred) {
-                const LANGUAGE_TO_COUNTRY: Record<string, string> = {
-                    'en': 'us', 'ja': 'jp', 'hi': 'in', 'es': 'es', 'fr': 'fr', 'de': 'de',
-                    'it': 'it', 'pt': 'br', 'ru': 'ru', 'zh': 'cn', 'ko': 'kr', 'ar': 'sa'
-                };
-                regions.push({
-                    lang: preferredLang,
-                    country: LANGUAGE_TO_COUNTRY[preferredLang] || 'us'
-                });
-            }
+        let detectedLang = null;
+        if (userLang === 'auto') {
+            detectedLang = await translator.detectLanguage(query);
+            console.log(`Detected Query Language (User set to auto): ${detectedLang}`);
         }
 
-        console.log('Target Regions:', regions);
+        const outputLang = (userLang === 'auto' ? detectedLang : userLang) || 'en';
+        console.log(`Output Language: ${outputLang} (User Configured: ${userLang})`);
 
-        regions = regions.slice(0, 4);
+        let regions = foreignLang === 'en' ? ['en'] : [foreignLang, 'en'];
 
         const translatedQueries = await Promise.all(
-            regions.map(r => translator.translate(query, r.lang))
+            regions.map(r => translator.translate(query, r))
         );
 
         console.log('Translated queries:', translatedQueries);
@@ -158,21 +142,25 @@ async function handleSearch(query: string, tabId: number) {
             const translatedQuery = translatedQueries[index];
             const finalQuery = translatedQuery || query;
             if (!translatedQuery) {
-                console.warn(`Translation failed for ${r.lang}, falling back to original: "${query}"`);
+                console.warn(`Translation failed for ${r}, falling back to original: "${query}"`);
             }
-            return fetchSearchResults(finalQuery, r.lang, r.country);
+
+            const map: Record<string, string> = { 'en': "us", 'ja': "jp", 'de': "de", 'fr': "fr", 'es': "es", 'hi': "in", 'it': 'it', 'pt': 'br', 'ru': 'ru', 'zh': 'cn', 'ko': 'kr', 'ar': 'sa' };
+            const country = map[r] || "us";
+
+            return fetchSearchResults(finalQuery, r, country);
         });
 
         const searchResults = await Promise.all(searchPromises);
         const resultsMap: Record<string, any> = {};
         regions.forEach((r, i) => {
-            resultsMap[r.lang] = searchResults[i];
+            resultsMap[r] = searchResults[i];
         });
 
         const aggregated = aggregateResults(resultsMap);
 
         console.log(`Translating top results to ${outputLang}...`);
-        const topResultsToTranslate = aggregated.combined.slice(0, 5);
+        const topResultsToTranslate = aggregated.combined.slice(0, 10);
 
         await Promise.all(topResultsToTranslate.map(async (result, idx) => {
             try {
@@ -188,9 +176,9 @@ async function handleSearch(query: string, tabId: number) {
             }
         }));
 
-        console.log('Top results after translation:', aggregated.combined.slice(0, 5).map(r => r.title));
+        console.log('Top results after translation:', aggregated.combined.slice(0, 10).map(r => r.title));
 
-        const topSnippets = aggregated.combined.slice(0, 5).map(r => r.snippet);
+        const topSnippets = aggregated.combined.slice(0, 10).map(r => r.snippet);
         let summary = "Summary unavailable.";
         try {
             summary = await translator.generateSummary(topSnippets, outputLang);

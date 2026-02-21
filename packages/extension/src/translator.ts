@@ -28,7 +28,7 @@ export class ExtensionTranslator {
                         "fast": true
                     },
                     "locale": {
-                        "source": null,
+                        "source": "auto",
                         "target": targetLang
                     },
                     "data": {
@@ -83,66 +83,7 @@ export class ExtensionTranslator {
         return translation || "Summary unavailable (Translation failed).";
     }
 
-    async determineRelevantLanguages(query: string, userLang: string = 'en'): Promise<{ lang: string, country: string }[]> {
-        const detectedLang = await this.detectLanguage(query);
-        console.log(`Lingo Detected Language for "${query}": ${detectedLang}`);
 
-        const explicitLang = this.detectExplicitLanguage(query);
-        if (explicitLang) {
-            console.log(`Explicit Language Requested: ${explicitLang}`);
-        }
-
-        const langs = new Set<string>();
-
-        if (explicitLang) langs.add(explicitLang);
-
-        if (detectedLang && detectedLang !== 'en') langs.add(detectedLang);
-
-        if (userLang && userLang !== 'en') langs.add(userLang);
-
-        langs.add('en');
-
-        const regions: { lang: string, country: string }[] = [];
-        const LANGUAGE_TO_COUNTRY: Record<string, string> = {
-            'en': 'us',
-            'ja': 'jp',
-            'hi': 'in',
-            'es': 'es',
-            'fr': 'fr',
-            'de': 'de',
-            'it': 'it',
-            'pt': 'br',
-            'ru': 'ru',
-            'zh': 'cn',
-            'ko': 'kr',
-            'ar': 'sa'
-        };
-
-        for (const lang of langs) {
-            regions.push({
-                lang: lang,
-                country: LANGUAGE_TO_COUNTRY[lang] || 'us'
-            });
-        }
-
-        return regions.slice(0, 3);
-    }
-
-    private detectExplicitLanguage(query: string): string | null {
-        const lower = query.toLowerCase();
-        if (lower.includes('in hindi')) return 'hi';
-        if (lower.includes('in japanese')) return 'ja';
-        if (lower.includes('in spanish')) return 'es';
-        if (lower.includes('in french')) return 'fr';
-        if (lower.includes('in german')) return 'de';
-        if (lower.includes('in italian')) return 'it';
-        if (lower.includes('in portuguese')) return 'pt';
-        if (lower.includes('in russian')) return 'ru';
-        if (lower.includes('in chinese')) return 'zh';
-        if (lower.includes('in korean')) return 'ko';
-        if (lower.includes('in arabic') || lower.includes('arabic')) return 'ar';
-        return null;
-    }
 }
 
 export const translator = new ExtensionTranslator();

@@ -22,7 +22,7 @@ export async function fetchSearchResults(query: string, language: string, google
         q: query,
         gl: googleDomain,
         hl: language,
-        num: 5
+        num: 10
     };
 
     try {
