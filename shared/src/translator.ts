@@ -14,7 +14,7 @@ export class Translator {
 
     public async translate(text: string): Promise<string> {
         const config = configManager.get();
-        const sourceLang = 'auto';
+        const sourceLang = 'en';
         const targetLang = config.targetLang;
 
         const cached = translationCache.get(text, sourceLang, targetLang);
@@ -32,7 +32,7 @@ export class Translator {
             }
 
             const translatedText = await this.lingo.localizeText(text, {
-                sourceLocale: 'auto',
+                sourceLocale: 'en',
                 targetLocale: targetLang,
             });
 
