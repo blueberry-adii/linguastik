@@ -19,15 +19,15 @@ Linguastik is a developer toolset that makes the web and your command line reada
 
 - **Real-time output translation** — wrap any terminal command (`npm`, `git`, `docker`, etc.) and read its output in your language as it streams.
 
-  ![CLI-2](./assets/cli/cli2.png)
+ <img src="./assets/cli/cli2.png" width="400">
 
 - **Error explainer** — when a command fails, run it with `--explain` to get a structured breakdown of the problem, its likely causes, and actionable fixes.
 
-  ![CLI3](./assets/cli/cli3.png)
+ <img src="./assets/cli/cli3.png" width="400">
 
 - **Persistent settings** — configure your API key and target language once; they're saved locally and remembered between sessions.
 
-  ![CLI-1](./assets/cli/cli1.png)
+ <img src="./assets/cli/cli1.png" width="400">
 
 - **Smart caching** — translations are cached on disk so repeated output is instant and doesn't hit the API again.
 
@@ -45,12 +45,13 @@ Linguastik is a developer toolset that makes the web and your command line reada
 
 - **Vision search** — upload or paste an image in the extension popup, and Gemini AI will identify what's in it and search for it across languages.
 
-![VisionSearch](./assets/extension/image_analysis.png)
-![VisionSearch](./assets/extension/image_result.png)
+<img src="./assets/extension/image_analysis.png" width="300">
+
+<img src="./assets/extension/image_result.png" width="300">
 
 - **Localized popup UI** — the extension's own interface translates itself into your chosen language.
 
-![ExtensionSettings](./assets/extension/extension_settings.png)
+<img src="./assets/extension/extension_settings.png" width="300">
 
 ---
 
