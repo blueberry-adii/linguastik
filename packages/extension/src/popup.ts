@@ -225,16 +225,12 @@ async function translateUI(targetLang: string, apiKey: string) {
 
                 if (!response.ok) {
                     console.error(`[translateUI] API Error: ${response.status} ${response.statusText}`);
-                    const errText = await response.text();
-                    console.error(`[translateUI] API Error Body:`, errText);
                     return;
                 }
 
                 const jsonResponse = await response.json();
-                console.log(`[translateUI] API Response for "${item.key}":`, jsonResponse);
-
                 const translation = jsonResponse.data?.text;
-                if (translation) {
+                if (translation && !translation.includes('Error')) {
                     cache[item.key] = translation;
                 }
             } catch (error) {
@@ -249,6 +245,14 @@ async function translateUI(targetLang: string, apiKey: string) {
         const key = el.getAttribute('data-i18n');
         if (key && cache[key]) {
             el.textContent = cache[key];
+
+            if (['ar', 'he', 'fa', 'ur'].includes(targetLang)) {
+                el.setAttribute('dir', 'rtl');
+                (el as HTMLElement).style.textAlign = 'right';
+            } else {
+                el.removeAttribute('dir');
+                (el as HTMLElement).style.textAlign = '';
+            }
         }
     });
 }
