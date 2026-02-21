@@ -94,10 +94,65 @@
             text-align: center;
             opacity: 0.9;
         }
+
+        .translation-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: grayscale(80%) blur(4px);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .translation-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .translation-overlay-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #00E5FF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        .translation-overlay-text {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #00E5FF, #2979FF, #00E5FF);
+            background-size: 200% auto;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: gradientShine 2s linear infinite;
+        }
+
+        @keyframes gradientShine {
+            to {
+                background-position: 200% center;
+            }
+        }
     </style>
 </head>
 
 <body>
+    <div id="translationOverlay" class="translation-overlay">
+        <div class="translation-overlay-spinner"></div>
+        <div class="translation-overlay-text" data-i18n="translatingOverlay">Translating...</div>
+    </div>
     <h1 data-i18n="title">Linguastik Lens</h1>
 
     <label data-i18n="serperKey">Serper.dev API Key</label>

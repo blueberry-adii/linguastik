@@ -197,8 +197,11 @@ async function translateUI(targetLang: string, apiKey: string) {
     let cache = cached ? JSON.parse(cached) : {};
 
     const needsTranslation = textsToTranslate.filter(item => !cache[item.key]);
+    const overlay = document.getElementById('translationOverlay');
 
     if (needsTranslation.length > 0) {
+        if (overlay) overlay.classList.add('active');
+
         await Promise.all(needsTranslation.map(async (item) => {
             try {
                 console.log(`[translateUI] Fetching translation for: "${item.text}"`);
@@ -239,6 +242,7 @@ async function translateUI(targetLang: string, apiKey: string) {
         }));
 
         localStorage.setItem(cacheKey, JSON.stringify(cache));
+        if (overlay) overlay.classList.remove('active');
     }
 
     elements.forEach(el => {
