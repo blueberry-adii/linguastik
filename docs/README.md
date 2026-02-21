@@ -81,17 +81,22 @@ npm run build
 ### CLI
 
 ```bash
+# Set CLI command globally
+cd packages/cli
+npm link
+cd ../..
+
 # Set your API key
-node packages/cli/dist/index.js --key <your-lingo.dev-key>
+lingo --key <your-lingo.dev-key>
 
 # Set target language
-node packages/cli/dist/index.js --lang ja
+lingo --lang ja
 
 # Wrap any command
-node packages/cli/dist/index.js npm test
+lingo npm test
 
 # Get error explanations
-node packages/cli/dist/index.js --explain git push origin main
+lingo --explain git push origin main
 ```
 
 ### Extension
