@@ -152,13 +152,13 @@ function processImage(dataUrl: string) {
     img.src = dataUrl;
 }
 
-chrome.storage.sync.get(['serperApiKey', 'lingoApiKey', 'geminiApiKey', 'userLanguage', 'preferredLanguage', 'enabled', 'visionEnabled'], (result) => {
+chrome.storage.sync.get(['serperApiKey', 'lingoApiKey', 'geminiApiKey', 'foreignLanguage', 'userLanguage', 'enabled', 'visionEnabled'], (result) => {
     if (result.serperApiKey) (document.getElementById('serperApiKey') as HTMLInputElement).value = result.serperApiKey;
     if (result.lingoApiKey) (document.getElementById('lingoApiKey') as HTMLInputElement).value = result.lingoApiKey;
     if (result.geminiApiKey) (document.getElementById('geminiApiKey') as HTMLInputElement).value = result.geminiApiKey;
-    if (result.userLanguage) (document.getElementById('userLanguage') as HTMLSelectElement).value = result.userLanguage;
-    const preferredLang = result.preferredLanguage || 'auto';
-    (document.getElementById('preferredLanguage') as HTMLSelectElement).value = preferredLang;
+    if (result.foreignLanguage) (document.getElementById('foreignLanguage') as HTMLSelectElement).value = result.foreignLanguage;
+    const userLang = result.userLanguage || 'auto';
+    (document.getElementById('userLanguage') as HTMLSelectElement).value = userLang;
 
     const enabled = result.enabled !== undefined ? result.enabled : true;
     (document.getElementById('enabled') as HTMLInputElement).checked = enabled;
@@ -168,7 +168,7 @@ chrome.storage.sync.get(['serperApiKey', 'lingoApiKey', 'geminiApiKey', 'userLan
         if (visionContainer) visionContainer.style.display = 'flex';
     }
 
-    const initialLang = result.preferredLanguage === 'auto' ? 'en' : result.preferredLanguage || 'en';
+    const initialLang = result.userLanguage === 'auto' ? 'en' : result.userLanguage || 'en';
     if (initialLang !== 'en') {
         translateUI(initialLang, result.lingoApiKey);
     }
@@ -229,7 +229,7 @@ async function translateUI(targetLang: string, apiKey: string) {
                             "fast": true
                         },
                         "locale": {
-                            "source": "en",
+                            "source": "auto",
                             "target": targetLang
                         },
                         "data": {
@@ -272,8 +272,8 @@ document.getElementById('saveBtn')?.addEventListener('click', () => {
     const serperApiKey = (document.getElementById('serperApiKey') as HTMLInputElement).value;
     const lingoApiKey = (document.getElementById('lingoApiKey') as HTMLInputElement).value;
     const geminiApiKey = (document.getElementById('geminiApiKey') as HTMLInputElement).value;
+    const foreignLanguage = (document.getElementById('foreignLanguage') as HTMLSelectElement).value;
     const userLanguage = (document.getElementById('userLanguage') as HTMLSelectElement).value;
-    const preferredLanguage = (document.getElementById('preferredLanguage') as HTMLSelectElement).value;
     const enabled = (document.getElementById('enabled') as HTMLInputElement).checked;
     const visionEnabled = eyeBtn?.classList.contains('active') || false;
 
@@ -281,13 +281,13 @@ document.getElementById('saveBtn')?.addEventListener('click', () => {
         serperApiKey,
         lingoApiKey,
         geminiApiKey,
+        foreignLanguage,
         userLanguage,
-        preferredLanguage,
         enabled,
         visionEnabled
     }, async () => {
         // Trigger translation on save if language changed
-        const targetLang = preferredLanguage === 'auto' ? 'en' : preferredLanguage;
+        const targetLang = userLanguage === 'auto' ? 'en' : userLanguage;
         if (targetLang !== 'en') {
             await translateUI(targetLang, lingoApiKey);
         } else {
