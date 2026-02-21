@@ -10,16 +10,16 @@ export const styles = `
     right: 0;
     width: 380px;
     height: 100vh;
-    background: #0F0F12;
-    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(15, 15, 18, 0.85);
+    border-left: 1px solid rgba(0, 229, 255, 0.3);
     color: #E2E2E2;
     z-index: 2147483647;
-    box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.6), inset 2px 0 10px rgba(0, 229, 255, 0.05);
     display: flex;
     flex-direction: column;
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     transform: translateX(100%);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
 }
 
 .sidebar.visible {
@@ -293,16 +293,16 @@ h2 {
 .linguastik-floating-btn {
     position: absolute;
     z-index: 2147483647;
-    background: #0F0F12;
-    border: 1px solid rgba(0, 229, 255, 0.3);
-    border-radius: 8px;
-    padding: 6px 10px;
+    background: linear-gradient(135deg, #00E5FF 0%, #2979FF 100%);
+    border: none;
+    border-radius: 20px;
+    padding: 8px 14px;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 229, 255, 0.4);
     display: flex;
     align-items: center;
-    gap: 6px;
-    color: #00E5FF;
+    gap: 8px;
+    color: #0F172A;
     font-size: 13px;
     font-weight: 600;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -311,10 +311,9 @@ h2 {
 }
 
 .linguastik-floating-btn:hover {
-    background: rgba(15, 15, 18, 0.75);
-    border-color: rgba(0, 229, 255, 0.4);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 229, 255, 0.5);
+    filter: brightness(1.1);
 }
 
 .linguastik-floating-btn svg {
@@ -326,11 +325,11 @@ h2 {
 .linguastik-popup {
     position: absolute;
     z-index: 2147483647;
-    background: #0F0F12;
-    border: 1px solid rgba(0, 229, 255, 0.3);
+    background: rgba(15, 15, 18, 0.95);
+    border: 1px solid rgba(0, 229, 255, 0.4);
     border-radius: 12px;
     padding: 16px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 0 16px rgba(0, 229, 255, 0.05);
     color: #E2E2E2;
     font-size: 14px;
     min-width: 200px;
@@ -340,6 +339,7 @@ h2 {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    backdrop-filter: blur(8px);
 }
 
 .linguastik-popup-header {
@@ -374,16 +374,16 @@ h2 {
     left: 0;
     width: 380px;
     height: 100vh;
-    background: #0F0F12;
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(15, 15, 18, 0.85);
+    border-right: 1px solid rgba(0, 229, 255, 0.3);
     color: #E2E2E2;
     z-index: 2147483647;
-    box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+    box-shadow: 10px 0 40px rgba(0, 0, 0, 0.6), inset -2px 0 10px rgba(0, 229, 255, 0.05);
     display: flex;
     flex-direction: column;
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     transform: translateX(-100%);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px);
 }
 
 .sidebar-left.visible {
@@ -395,25 +395,35 @@ h2 {
     position: fixed;
     top: 120px;
     left: 0;
-    background: #0F0F12;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(15, 15, 18, 0.95);
+    border: 1px solid rgba(0, 229, 255, 0.2);
     border-left: none;
     color: #00E5FF;
-    padding: 10px 8px;
-    border-radius: 0 8px 8px 0;
+    padding: 12px 10px;
+    border-radius: 0 12px 12px 0;
     cursor: pointer;
     z-index: 2147483646;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.3);
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 4px 0 16px rgba(0, 229, 255, 0.15);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     display: none; /* Hidden by default until used */
     align-items: center;
     justify-content: center;
     transform: translateX(0);
+    animation: pulseGlowRight 2s infinite ease-in-out;
+}
+
+@keyframes pulseGlowRight {
+    0% { box-shadow: 4px 0 16px rgba(0, 229, 255, 0.1); }
+    50% { box-shadow: 4px 0 24px rgba(0, 229, 255, 0.3); }
+    100% { box-shadow: 4px 0 16px rgba(0, 229, 255, 0.1); }
 }
 
 .toggle-btn-left:hover {
-    padding-left: 12px;
-    background: rgba(15, 15, 18, 0.95);
+    padding-left: 14px;
+    background: #00E5FF;
+    color: #0F0F12;
+    animation: none;
+    box-shadow: 6px 0 24px rgba(0, 229, 255, 0.4);
 }
 
 .sidebar-left.visible ~ .toggle-btn-left {
@@ -421,10 +431,10 @@ h2 {
 }
 
 .toggle-btn-left svg {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     stroke: currentColor;
-    stroke-width: 2;
+    stroke-width: 2.5;
     fill: none;
 }
 `;
