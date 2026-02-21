@@ -11,6 +11,6 @@
     "ora": "^8.1.1"
   },
   "bin": {
-    "lg": "./dist/index.js"
+    "lingo": "./dist/index.js"
   }
 }
