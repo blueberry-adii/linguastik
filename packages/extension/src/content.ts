@@ -16,9 +16,12 @@ function getQueryFromURL() {
 let lastQuery = getQueryFromURL();
 setInterval(() => {
     const current = getQueryFromURL();
-    if (current && current !== lastQuery) {
+    if (current !== lastQuery) {
         lastQuery = current;
-        checkEnabledAndSearch(current);
+        updateRightToggleVisibility(current);
+        if (current) {
+            checkEnabledAndSearch(current);
+        }
     }
 }, 1000);
 
@@ -133,6 +136,10 @@ function createSidebarIfNeeded(query: string = '') {
     `;
     toggleBtn.title = "Open Linguastik Lens";
     toggleBtn.style.pointerEvents = 'auto';
+
+    if (!query) {
+        toggleBtn.style.display = 'none';
+    }
     shadow.appendChild(toggleBtn);
 
     toggleBtn.addEventListener('click', () => {
@@ -351,6 +358,15 @@ const LANG_MAP: Record<string, string> = {
 
 function getLangName(code: string): string {
     return LANG_MAP[code] || code.toUpperCase();
+}
+
+function updateRightToggleVisibility(query: string) {
+    const host = document.getElementById('linguastik-lens-host');
+    if (!host || !host.shadowRoot) return;
+    const toggleBtn = host.shadowRoot.getElementById('linguastik-toggle-right') as HTMLElement | null;
+    if (toggleBtn) {
+        toggleBtn.style.display = query ? '' : 'none';
+    }
 }
 
 function removeFloatingButton() {
