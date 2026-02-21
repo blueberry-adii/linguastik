@@ -253,36 +253,46 @@ async function translateUI(targetLang: string, apiKey: string) {
     });
 }
 
-document.getElementById('saveBtn')?.addEventListener('click', () => {
-    const serperApiKey = (document.getElementById('serperApiKey') as HTMLInputElement).value;
-    const lingoApiKey = (document.getElementById('lingoApiKey') as HTMLInputElement).value;
-    const geminiApiKey = (document.getElementById('geminiApiKey') as HTMLInputElement).value;
+function autoSaveSettings(shouldTranslate: boolean = false) {
     const foreignLanguage = (document.getElementById('foreignLanguage') as HTMLSelectElement).value;
     const userLanguage = (document.getElementById('userLanguage') as HTMLSelectElement).value;
     const enabled = (document.getElementById('enabled') as HTMLInputElement).checked;
     const visionEnabled = eyeBtn?.classList.contains('active') || false;
 
     chrome.storage.sync.set({
-        serperApiKey,
-        lingoApiKey,
-        geminiApiKey,
         foreignLanguage,
         userLanguage,
         enabled,
         visionEnabled
     }, async () => {
-        // Trigger translation on save if language changed
-        const targetLang = userLanguage === 'auto' ? 'en' : userLanguage;
-        if (targetLang !== 'en') {
-            await translateUI(targetLang, lingoApiKey);
-        } else {
-            localStorage.setItem('show_settings_saved', 'true');
-            location.reload();
-            return;
+        if (shouldTranslate) {
+            const lingoApiKey = (document.getElementById('lingoApiKey') as HTMLInputElement).value;
+            const targetLang = userLanguage === 'auto' ? 'en' : userLanguage;
+            if (targetLang !== 'en') {
+                await translateUI(targetLang, lingoApiKey);
+            } else {
+                location.reload();
+            }
         }
+    });
+}
 
+document.getElementById('foreignLanguage')?.addEventListener('change', () => autoSaveSettings());
+document.getElementById('userLanguage')?.addEventListener('change', () => autoSaveSettings(true));
+document.getElementById('enabled')?.addEventListener('change', () => autoSaveSettings());
+
+document.getElementById('saveBtn')?.addEventListener('click', () => {
+    const serperApiKey = (document.getElementById('serperApiKey') as HTMLInputElement).value;
+    const lingoApiKey = (document.getElementById('lingoApiKey') as HTMLInputElement).value;
+    const geminiApiKey = (document.getElementById('geminiApiKey') as HTMLInputElement).value;
+
+    chrome.storage.sync.set({
+        serperApiKey,
+        lingoApiKey,
+        geminiApiKey
+    }, () => {
         const status = document.getElementById('status');
-        const settingsSavedMsg = document.getElementById('msgSettingsSaved')?.textContent || 'Settings Saved!';
+        const settingsSavedMsg = document.getElementById('msgSettingsSaved')?.textContent || 'Keys Saved!';
 
         if (status) {
             status.textContent = settingsSavedMsg;
@@ -296,6 +306,7 @@ eyeBtn?.addEventListener('click', () => {
     if (visionContainer) {
         visionContainer.style.display = isActive ? 'flex' : 'none';
     }
+    autoSaveSettings();
 });
 
 visionUploadBtn?.addEventListener('click', () => {
