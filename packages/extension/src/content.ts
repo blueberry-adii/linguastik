@@ -184,8 +184,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             // Update regions in header
             const regionContainer = host.shadowRoot.getElementById('region-tags-container');
             if (regionContainer && message.data.regions) {
-                regionContainer.innerHTML = message.data.regions.map((r: any) =>
-                    `<span class="region-tag" title="${r.country}">${r.lang.toUpperCase()}</span>`
+                regionContainer.innerHTML = (message.data.regions as string[]).map((r) =>
+                    `<span class="region-tag" title="${r}">${r.toUpperCase()}</span>`
                 ).join('');
             }
             const overlay = host.shadowRoot.getElementById('sidebarTranslationOverlay');
