@@ -31,25 +31,35 @@ export const styles = `
     position: fixed;
     top: 120px;
     right: 0;
-    background: #0F0F12;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(15, 15, 18, 0.95);
+    border: 1px solid rgba(0, 229, 255, 0.2);
     border-right: none;
     color: #00E5FF;
-    padding: 10px 8px;
-    border-radius: 8px 0 0 8px;
+    padding: 12px 10px;
+    border-radius: 12px 0 0 12px;
     cursor: pointer;
     z-index: 2147483646;
-    box-shadow: -2px 0 10px rgba(0,0,0,0.3);
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: -4px 0 16px rgba(0, 229, 255, 0.15);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     align-items: center;
     justify-content: center;
     transform: translateX(0);
+    animation: pulseGlow 2s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+    0% { box-shadow: -4px 0 16px rgba(0, 229, 255, 0.1); }
+    50% { box-shadow: -4px 0 24px rgba(0, 229, 255, 0.3); }
+    100% { box-shadow: -4px 0 16px rgba(0, 229, 255, 0.1); }
 }
 
 .toggle-btn:hover {
-    padding-right: 12px;
-    background: rgba(15, 15, 18, 0.95);
+    padding-right: 14px;
+    background: #00E5FF;
+    color: #0F0F12;
+    animation: none;
+    box-shadow: -6px 0 24px rgba(0, 229, 255, 0.4);
 }
 
 /* Hide button when sidebar is visible */
@@ -58,10 +68,10 @@ export const styles = `
 }
 
 .toggle-btn svg {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     stroke: currentColor;
-    stroke-width: 2;
+    stroke-width: 2.5;
     fill: none;
 }
 
@@ -134,16 +144,24 @@ header h1 svg {
     overflow-y: auto;
     padding: 24px;
     scrollbar-width: thin;
-    scrollbar-color: #333 transparent;
+    scrollbar-color: rgba(0, 229, 255, 0.3) transparent;
 }
 
 #result-content::-webkit-scrollbar {
     width: 6px;
 }
 
+#result-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
 #result-content::-webkit-scrollbar-thumb {
-    background-color: #333;
-    border-radius: 3px;
+    background-color: rgba(0, 229, 255, 0.3);
+    border-radius: 10px;
+}
+
+#result-content::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 229, 255, 0.6);
 }
 
 /* Sections */
@@ -206,7 +224,7 @@ h2 {
 .source-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
 }
 
 .source-item {
@@ -214,31 +232,35 @@ h2 {
     text-decoration: none;
     background: rgba(255,255,255,0.02);
     border: 1px solid rgba(255,255,255,0.05);
-    padding: 10px;
-    border-radius: 8px;
-    transition: all 0.2s;
+    padding: 14px;
+    border-radius: 10px;
+    transition: all 0.2s ease;
 }
 
 .source-item:hover {
-    background: rgba(255,255,255,0.06);
-    transform: translateY(-1px);
-    border-color: rgba(255,255,255,0.1);
+    background: rgba(0, 229, 255, 0.03);
+    transform: translateY(-2px);
+    border-color: rgba(0, 229, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 229, 255, 0.08);
 }
 
 .source-title {
-    font-size: 13px;
-    color: #4FB3D9;
+    font-size: 14px;
+    color: #E2E2E2;
     font-weight: 500;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     display: block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.4;
+    transition: color 0.2s ease;
+}
+
+.source-item:hover .source-title {
+    color: #00E5FF;
 }
 
 .source-meta {
     font-size: 11px;
-    color: #666;
+    color: #8892B0;
     display: flex;
     justify-content: space-between;
 }

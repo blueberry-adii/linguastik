@@ -3,62 +3,96 @@
 
 <head>
     <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         body {
             width: 320px;
-            background: #08080c;
+            background: linear-gradient(145deg, #0F172A 0%, #08080c 100%);
             color: #e8e8f0;
-            font-family: monospace;
-            padding: 20px;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            padding: 24px;
+            margin: 0;
+            border-top: 2px solid #00E5FF;
         }
 
         h1 {
-            font-size: 16px;
+            font-size: 18px;
+            font-weight: 600;
             color: #fff;
-            margin-top: 0;
+            margin: 0 0 4px 0;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #fff 0%, #aaa 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         label {
             display: block;
             font-size: 11px;
-            color: #888;
-            margin-top: 15px;
+            font-weight: 500;
+            color: #8892B0;
+            margin-top: 16px;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        input,
+        input[type="password"],
         select {
             width: 100%;
-            padding: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid #333;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             color: white;
-            border-radius: 4px;
-            margin-top: 5px;
+            border-radius: 8px;
+            margin-top: 6px;
             box-sizing: border-box;
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: 13px;
+            transition: all 0.2s ease;
+            outline: none;
         }
 
-        button {
+        input[type="password"]:focus,
+        select:focus {
+            border-color: rgba(0, 229, 255, 0.5);
+            background: rgba(0, 229, 255, 0.02);
+            box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.1);
+        }
+
+        button#saveBtn {
             width: 100%;
-            padding: 10px;
-            background: #333;
-            color: white;
+            padding: 12px;
+            background: linear-gradient(135deg, #00E5FF 0%, #2979FF 100%);
+            color: #0F172A;
+            font-weight: 600;
+            font-size: 13px;
             border: none;
-            border-radius: 4px;
-            margin-top: 20px;
+            border-radius: 8px;
+            margin-top: 24px;
             cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 229, 255, 0.2);
         }
 
-        button:hover {
-            background: #444;
+        button#saveBtn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(0, 229, 255, 0.3);
+            filter: brightness(1.1);
+        }
+
+        button#saveBtn:active {
+            transform: translateY(1px);
         }
 
         .status {
-            margin-top: 10px;
-            font-size: 11px;
-            color: #4caf50;
-            height: 15px;
+            margin-top: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #00E5FF;
+            height: 16px;
             text-align: center;
+            opacity: 0.9;
         }
     </style>
 </head>
@@ -104,39 +138,46 @@
         <input type="checkbox" id="enabled" style="width: auto; margin: 0;">
     </div>
 
-    <button id="saveBtn" data-i18n="saveKeys">Save Keys</button>
+    <div style="display: flex; gap: 8px; margin-top: 24px; align-items: stretch;">
+        <button id="saveBtn" data-i18n="saveKeys" style="margin-top: 0; flex: 1;">Save Keys</button>
+        <button id="eyeBtn" class="eye-btn" title="View Details"
+            style="margin-top: 0; padding: 0 16px; border-radius: 8px;">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+        </button>
+    </div>
     <div class="status" id="status"></div>
     <span id="msgSettingsSaved" data-i18n="msgKeysSaved" style="display: none;">Keys Saved!</span>
-
-    <button id="eyeBtn" class="eye-btn" title="View Details">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-        </svg>
-    </button>
     <style>
         .eye-btn {
-            background: rgba(255, 255, 255, 0.1);
-            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            margin-top: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 8px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
             cursor: pointer;
-            transition: all 0.2s;
-            color: #888;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            color: #8892B0;
         }
 
         .eye-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.1);
             color: #fff;
+            transform: translateY(-1px);
         }
 
         .eye-btn.active {
-            background: rgba(0, 229, 255, 0.15);
+            background: rgba(0, 229, 255, 0.1);
             color: #00E5FF;
             border: 1px solid rgba(0, 229, 255, 0.3);
+            box-shadow: inset 0 0 10px rgba(0, 229, 255, 0.1);
         }
 
         .vision-container {
