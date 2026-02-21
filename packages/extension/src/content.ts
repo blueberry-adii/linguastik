@@ -117,21 +117,19 @@ function createSidebarIfNeeded(query: string = '') {
     shadow.appendChild(leftSidebar);
 
     // Toggle Button (Right - Search)
-    const pageQuery = getQueryFromURL();
-    if (pageQuery) {
-        const toggleBtn = document.createElement('button');
-        toggleBtn.className = 'toggle-btn';
-        toggleBtn.innerHTML = `
-            <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
-        `;
-        toggleBtn.title = "Open Linguastik Lens";
-        toggleBtn.style.pointerEvents = 'auto';
-        shadow.appendChild(toggleBtn);
+    const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'toggle-btn';
+    toggleBtn.id = 'linguastik-toggle-right';
+    toggleBtn.innerHTML = `
+        <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+    `;
+    toggleBtn.title = "Open Linguastik Lens";
+    toggleBtn.style.pointerEvents = 'auto';
+    shadow.appendChild(toggleBtn);
 
-        toggleBtn.addEventListener('click', () => {
-            container.classList.add('visible');
-        });
-    }
+    toggleBtn.addEventListener('click', () => {
+        container.classList.add('visible');
+    });
 
     // Toggle Button (Left - Quick Translate)
     const toggleBtnLeft = document.createElement('button');

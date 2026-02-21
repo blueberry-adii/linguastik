@@ -28,6 +28,10 @@ function handleFileSelection(file: File) {
             const result = e.target.result as string;
             visionPreviewImg.src = result;
 
+            localStorage.setItem('visionImageData', result);
+            localStorage.setItem('visionImageName', file.name);
+            localStorage.removeItem('visionAnalysisResult');
+
             processImage(result);
         }
     };
@@ -79,58 +83,13 @@ function processImage(dataUrl: string) {
 
                     if (response && response.success) {
                         console.log('Gemini Analysis:', response.data);
+                        localStorage.setItem('visionAnalysisResult', JSON.stringify(response.data));
                         if (visionFileName) {
                             const query = response.data.query || response.data.object || 'Unknown Object';
                             const confidence = Math.round((response.data.confidence || 0) * 100);
                             visionFileName.innerHTML = `<strong>Generating Search:</strong> ${query} <span style="font-size: 0.9em; opacity: 0.8;">(${confidence}%)</span>`;
 
-                            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                                if (tabs[0]?.id) {
-                                    const tabId = tabs[0].id;
-                                    console.log('Target Tab ID:', tabId);
-
-                                    chrome.tabs.sendMessage(tabId, {
-                                        type: 'SEARCH_LOADING',
-                                        query: query
-                                    }, (response) => {
-                                        if (chrome.runtime.lastError) {
-                                            console.warn('Content script not ready. Injecting...', chrome.runtime.lastError);
-
-                                            chrome.scripting.executeScript({
-                                                target: { tabId: tabId },
-                                                files: ['content.js']
-                                            }, () => {
-                                                if (chrome.runtime.lastError) {
-                                                    console.error('Failed to inject content script:', chrome.runtime.lastError);
-                                                } else {
-                                                    console.log('Content script injected. Retrying SEARCH_LOADING...');
-                                                    chrome.tabs.sendMessage(tabId, {
-                                                        type: 'SEARCH_LOADING',
-                                                        query: query
-                                                    });
-                                                }
-                                            });
-                                        } else {
-                                            console.log('SEARCH_LOADING sent directly to tab');
-                                        }
-                                    });
-
-                                    console.log('Sending NEW_SEARCH to background for tab:', tabId);
-                                    chrome.runtime.sendMessage({
-                                        type: 'NEW_SEARCH',
-                                        query: query,
-                                        tabId: tabId
-                                    }, (resp) => {
-                                        if (chrome.runtime.lastError) {
-                                            console.error('Failed to send NEW_SEARCH:', chrome.runtime.lastError);
-                                        } else {
-                                            console.log('NEW_SEARCH sent successfully');
-                                        }
-                                    });
-                                } else {
-                                    console.error('No active tab found to send search');
-                                }
-                            });
+                            triggerSearchForQuery(query);
                         }
                     } else {
                         console.error('Gemini Error:', response?.error);
@@ -166,6 +125,32 @@ chrome.storage.sync.get(['serperApiKey', 'lingoApiKey', 'geminiApiKey', 'foreign
     if (result.visionEnabled && eyeBtn) {
         eyeBtn.classList.add('active');
         if (visionContainer) visionContainer.style.display = 'flex';
+
+        const savedImageData = localStorage.getItem('visionImageData');
+        const savedImageName = localStorage.getItem('visionImageName');
+        const savedAnalysis = localStorage.getItem('visionAnalysisResult');
+
+        if (savedImageData && savedImageName) {
+            if (visionEmptyState) visionEmptyState.style.display = 'none';
+            if (visionPreviewState) visionPreviewState.style.display = 'flex';
+            if (visionPreviewImg) visionPreviewImg.src = savedImageData;
+            if (visionFileName) visionFileName.textContent = savedImageName;
+
+            if (savedAnalysis) {
+                try {
+                    const data = JSON.parse(savedAnalysis);
+                    const query = data.query || data.object || 'Unknown Object';
+                    const confidence = Math.round((data.confidence || 0) * 100);
+                    if (visionFileName) {
+                        visionFileName.innerHTML = `<strong>Generating Search:</strong> ${query} <span style="font-size: 0.9em; opacity: 0.8;">(${confidence}%)</span>`;
+                    }
+                } catch (e) {
+                    console.error('Failed to parse saved analysis:', e);
+                }
+            } else {
+                processImage(savedImageData);
+            }
+        }
     }
 
     const initialLang = result.userLanguage === 'auto' ? 'en' : result.userLanguage || 'en';
@@ -327,6 +312,10 @@ visionClearBtn?.addEventListener('click', () => {
     if (visionPreviewState) visionPreviewState.style.display = 'none';
     if (visionEmptyState) visionEmptyState.style.display = 'flex';
     if (visionPreviewImg) visionPreviewImg.src = '';
+
+    localStorage.removeItem('visionImageData');
+    localStorage.removeItem('visionImageName');
+    localStorage.removeItem('visionAnalysisResult');
 });
 
 if (visionContainer) {
@@ -347,3 +336,53 @@ if (visionContainer) {
     });
 }
 
+
+function triggerSearchForQuery(query: string) {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]?.id) {
+            const tabId = tabs[0].id;
+            console.log('Target Tab ID:', tabId);
+
+            chrome.tabs.sendMessage(tabId, {
+                type: 'SEARCH_LOADING',
+                query: query
+            }, (response) => {
+                if (chrome.runtime.lastError) {
+                    console.warn('Content script not ready. Injecting...', chrome.runtime.lastError);
+
+                    chrome.scripting.executeScript({
+                        target: { tabId: tabId },
+                        files: ['content.js']
+                    }, () => {
+                        if (chrome.runtime.lastError) {
+                            console.error('Failed to inject content script:', chrome.runtime.lastError);
+                        } else {
+                            console.log('Content script injected. Retrying SEARCH_LOADING...');
+                            chrome.tabs.sendMessage(tabId, {
+                                type: 'SEARCH_LOADING',
+                                query: query
+                            });
+                        }
+                    });
+                } else {
+                    console.log('SEARCH_LOADING sent directly to tab');
+                }
+            });
+
+            console.log('Sending NEW_SEARCH to background for tab:', tabId);
+            chrome.runtime.sendMessage({
+                type: 'NEW_SEARCH',
+                query: query,
+                tabId: tabId
+            }, (resp) => {
+                if (chrome.runtime.lastError) {
+                    console.error('Failed to send NEW_SEARCH:', chrome.runtime.lastError);
+                } else {
+                    console.log('NEW_SEARCH sent successfully');
+                }
+            });
+        } else {
+            console.error('No active tab found to send search');
+        }
+    });
+}
