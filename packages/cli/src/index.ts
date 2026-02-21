@@ -20,6 +20,8 @@ program
     .option('-k, --key <key>', 'Set Lingo.dev API key')
     .option('--explain', 'Explain any errors encountered')
     .argument('[command...]', 'Command to run and translate')
+    .allowUnknownOption(true)
+    .passThroughOptions(true)
     .action(async (commandParts, options) => {
         if (options.key) {
             configManager.set('apiKey', options.key);
