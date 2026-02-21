@@ -77,9 +77,9 @@ program
 ${format.dim(`Tool: ${explanation.tool}`)}
 ${format.error(`Problem: ${explanation.problem}`)}
 
-${explanation.causes && explanation.causes.length > 0 ? format.dim('Possible causes:') + '\n' + explanation.causes.map(c => `  - ${c}`).join('\n') : ''}
+${explanation.causes && explanation.causes.length > 0 ? format.dim('Possible causes:') + '\n' + explanation.causes.map((c: string) => `  - ${c}`).join('\n') : ''}
 
-${explanation.fixes && explanation.fixes.length > 0 ? format.success('Suggested fixes:') + '\n' + explanation.fixes.map(f => `  - ${f}`).join('\n') : ''}
+${explanation.fixes && explanation.fixes.length > 0 ? format.success('Suggested fixes:') + '\n' + explanation.fixes.map((f: string) => `  - ${f}`).join('\n') : ''}
 
 ${explanation.learnMoreUrl ? format.dim(`Learn more: ${explanation.learnMoreUrl}`) : ''}
                     `.trim();
