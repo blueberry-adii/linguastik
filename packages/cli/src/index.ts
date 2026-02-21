@@ -11,7 +11,7 @@ const pkg = require('../package.json');
 const program = new Command();
 
 program
-    .name('lingo-dev')
+    .name('lingo')
     .description('Wraps terminal commands and translates their output in real-time')
     .version(pkg.version);
 
@@ -45,7 +45,7 @@ program
 
         if (!configManager.getApiKey()) {
             console.log(format.warn('Warning: No API key found. Translation will be disabled.'));
-            console.log(format.info('Run `lingo-dev --key <your-api-key>` to set it.'));
+            console.log(format.info('Run `lingo --key <your-api-key>` to set it.'));
         }
 
         let capturedStderr = '';
