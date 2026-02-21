@@ -1,6 +1,16 @@
-# Linguastik
+<div align="center">
+
+# 🌐 Linguastik
 
 **Break the language barrier in your terminal and your browser — powered by [Lingo.dev](https://lingo.dev) and Google Gemini.**
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Lingo.dev](https://img.shields.io/badge/Lingo.dev-8A3FFC?style=for-the-badge&logo=google-cloud&logoColor=white)](https://lingo.dev/)
+[![Gemini](https://img.shields.io/badge/Google%20Gemini-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white)](https://gemini.google.com/)
+
+---
+
+</div>
 
 **Demo Video: (In Production)**
 
