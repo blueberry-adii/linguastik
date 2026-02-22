@@ -31,7 +31,7 @@ Linguastik is a developer toolset that makes the web and your command line reada
 
  <img src="./assets/cli/cli2.png" width="400">
 
-- **Error explainer** — when a command fails, run it with `--explain` to get a structured breakdown of the problem, its likely causes, and actionable fixes.
+- **Precise mode** — run any command with `-p` / `--precise` to capture its full output and get an accurate, context-aware translation summary from lingo.dev, displayed in a clean summary box.
 
  <img src="./assets/cli/cli3.png" width="400">
 
@@ -97,8 +97,9 @@ lingo --lang ja
 lingo npm install
 lingo git status
 
-# Get a structured explanation of errors
-lingo --explain git push origin main
+# Precise mode — full-context translation summary
+lingo -p npm help
+lingo --precise git log --oneline
 ```
 
 ### Browser Extension

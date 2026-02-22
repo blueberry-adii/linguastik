@@ -40,7 +40,7 @@ The terminal command wrapper:
 
 | File                               | Description                                                             |
 | ---------------------------------- | ----------------------------------------------------------------------- |
-| [index.md](./cli/index.md)         | CLI entry point — argument parsing, `--explain`, exit code propagation  |
+| [index.md](./cli/index.md)         | CLI entry point — argument parsing, `--precise` mode, exit code propagation    |
 | [wrapper.md](./cli/wrapper.md)     | `execWithTranslation()` — real-time stream interception and translation |
 | [formatter.md](./cli/formatter.md) | Console output utilities: colors, boxes, spinners                       |
 
@@ -95,8 +95,8 @@ lingo --lang ja
 # Wrap any command
 lingo npm test
 
-# Get error explanations
-lingo --explain git push origin main
+# Precise mode — full-context translation summary
+lingo -p npm help
 ```
 
 ### Extension

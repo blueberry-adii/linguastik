@@ -3,13 +3,13 @@
 > **Role**: Pattern-based error analysis engine. Matches raw terminal error output against a structured JSON database to produce localized, human-readable explanations with root causes and actionable fixes.
 
 **Source**: [`shared/src/explainer.ts`](../../shared/src/explainer.ts)  
-**Used by**: [`cli/src/index.ts`](../cli/index.md) (when the `--explain` flag is passed)
+**Used by**: [`cli/src/index.ts`](../cli/index.md) (error pattern matching, available regardless of mode)
 
 ---
 
 ## Overview
 
-When a developer runs a command with `lingo-dev --explain <cmd>`, and that command fails, the full `stderr` output is captured and passed to `Explainer.explain()`. The explainer scans it against a database of regex patterns. When a match is found, it returns a structured report including:
+When a developer runs a command with `lingo --precise <cmd>`, and that command fails, the full `stderr` output is captured and passed to `Explainer.explain()`. The explainer scans it against a database of regex patterns. When a match is found, it returns a structured report including:
 
 - **Tool**: Which tool caused the error (e.g., `git`, `npm`, `docker`).
 - **Title**: A short problem title.
@@ -177,5 +177,5 @@ export const explainer = new Explainer();
 
 ## Related Modules
 
-- [`cli/index.ts`](../cli/index.md) — captures `stderr` and calls `explainer.explain()`
+- [`cli/index.ts`](../cli/index.md) — uses `explainer.explain()` for error pattern matching
 - [`shared/src/patterns/errors.json`](../../shared/src/patterns) — the pattern database loaded at startup
