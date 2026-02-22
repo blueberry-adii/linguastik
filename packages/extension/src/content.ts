@@ -328,8 +328,94 @@ function replaceSelectionWithTranslation(text: string, range: Range) {
                 text-underline-offset: 3px;
                 cursor: help;
             }
+            #lg-tooltip {
+                position: fixed;
+                z-index: 2147483647;
+                background: #1a1a2e;
+                border: 1px solid rgba(0,229,255,0.3);
+                border-radius: 8px;
+                padding: 8px 12px;
+                font-family: system-ui, sans-serif;
+                font-size: 13px;
+                color: #e0e0e0;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+                max-width: 280px;
+                pointer-events: auto;
+                opacity: 0;
+                transition: opacity 0.15s ease;
+            }
+            #lg-tooltip.lg-visible { opacity: 1; }
+            #lg-tooltip .lg-orig-label {
+                font-size: 10px;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: rgba(0,229,255,0.55);
+                margin-bottom: 4px;
+            }
+            #lg-tooltip .lg-orig-text {
+                margin: 0 0 8px;
+                line-height: 1.4;
+                color: #a0a0b8;
+            }
+            #lg-tooltip .lg-revert-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                padding: 4px 10px;
+                border-radius: 5px;
+                border: 1px solid rgba(0,229,255,0.35);
+                background: transparent;
+                color: rgba(0,229,255,0.9);
+                font-size: 12px;
+                cursor: pointer;
+                transition: background 0.15s;
+            }
+            #lg-tooltip .lg-revert-btn:hover { background: rgba(0,229,255,0.08); }
         `;
         document.head.appendChild(style);
+
+        const tooltip = document.createElement('div');
+        tooltip.id = 'lg-tooltip';
+        document.body.appendChild(tooltip);
+
+        let hideTimer: ReturnType<typeof setTimeout> | null = null;
+
+        const showTooltip = (span: HTMLElement) => {
+            if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+            const original = span.dataset.lgOriginal || '';
+            tooltip.innerHTML = `
+                <div class="lg-orig-label">Original</div>
+                <p class="lg-orig-text">${original}</p>
+                <button class="lg-revert-btn">↩ Revert</button>
+            `;
+            tooltip.querySelector('.lg-revert-btn')!.addEventListener('click', () => {
+                span.replaceWith(document.createTextNode(original));
+                tooltip.classList.remove('lg-visible');
+            });
+
+            const rect = span.getBoundingClientRect();
+            const tipW = 280;
+            const left = Math.min(Math.max(8, rect.left + rect.width / 2 - tipW / 2), window.innerWidth - tipW - 8);
+            tooltip.style.left = `${left}px`;
+            tooltip.style.top = `${rect.top - 8}px`;
+            tooltip.style.transform = 'translateY(-100%)';
+            tooltip.classList.add('lg-visible');
+        };
+
+        const hideTooltip = () => {
+            hideTimer = setTimeout(() => tooltip.classList.remove('lg-visible'), 200);
+        };
+
+        document.addEventListener('mouseover', (e) => {
+            const span = (e.target as Element).closest('.lg-translated') as HTMLElement | null;
+            if (span) showTooltip(span);
+        });
+        document.addEventListener('mouseout', (e) => {
+            const span = (e.target as Element).closest('.lg-translated');
+            if (span) hideTooltip();
+        });
+        tooltip.addEventListener('mouseenter', () => { if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; } });
+        tooltip.addEventListener('mouseleave', hideTooltip);
     }
 
     range.deleteContents();
@@ -343,7 +429,7 @@ function replaceSelectionWithTranslation(text: string, range: Range) {
         if (response && response.success && response.translation) {
             const span = document.createElement('span');
             span.className = 'lg-translated';
-            span.title = `Original: ${text}`;
+            span.dataset.lgOriginal = text;
             span.textContent = response.translation;
             shimmer.replaceWith(span);
         } else {
