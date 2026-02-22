@@ -18,39 +18,50 @@ export async function execWithTranslation(command: string, args: string[]) {
 
         const targetLang = configManager.get().targetLang || 'en';
 
-        const pendingTranslations: Promise<void>[] = [];
-
         let spinner = format.spinner(`Running ${command}...`).start();
 
-        const processLine = async (line: string, isStderr: boolean) => {
-            try {
-                const translated = await limit(() => translator.translate(line));
-                const output = (translated && translated.trim().length > 0) ? translated : line;
+        type QueueEntry = {
+            isStderr: boolean;
+            result: string | null;
+        };
 
-                // Stop spinner to print line, then restart if process is still active
+        const outputQueue: QueueEntry[] = [];
+        let nextToPrint = 0;
+
+        const pendingTranslations: Promise<void>[] = [];
+
+        const flushQueue = () => {
+            while (nextToPrint < outputQueue.length && outputQueue[nextToPrint].result !== null) {
+                const entry = outputQueue[nextToPrint];
                 spinner.stop();
-
-                if (isStderr) {
-                    process.stderr.write(output + '\n');
+                if (entry.isStderr) {
+                    process.stderr.write(entry.result! + '\n');
                 } else {
-                    process.stdout.write(output + '\n');
+                    process.stdout.write(entry.result! + '\n');
                 }
-
-                if (child.exitCode === null) {
-                    spinner.start('Translating...');
-                }
-
-            } catch (e) {
-                spinner.stop();
-                if (isStderr) process.stderr.write(line + '\n');
-                else process.stdout.write(line + '\n');
-                if (child.exitCode === null) spinner.start('Translating...');
+                nextToPrint++;
+            }
+            if (child.exitCode === null && nextToPrint < outputQueue.length) {
+                spinner.start('Translating...');
             }
         };
 
         const queueLine = (line: string, isStderr: boolean) => {
             if (!line.trim()) return;
-            const p = processLine(line, isStderr);
+
+            const index = outputQueue.length;
+            outputQueue.push({ isStderr, result: null });
+
+            const p = limit(async () => {
+                try {
+                    const translated = await translator.translate(line);
+                    outputQueue[index].result = (translated && translated.trim().length > 0) ? translated : line;
+                } catch {
+                    outputQueue[index].result = line;
+                }
+                flushQueue();
+            });
+
             pendingTranslations.push(p);
         };
 
