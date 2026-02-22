@@ -256,16 +256,18 @@ function handleSelection() {
     if (text && text.length > 0) {
         const range = selection!.getRangeAt(0);
         const rect = range.getBoundingClientRect();
-        showFloatingButton(rect.left + (rect.width / 2), rect.bottom + 10, text);
+        showFloatingButton(rect.left + (rect.width / 2), rect.bottom + 10, text, range);
     } else {
         removeFloatingButton();
     }
 }
 
-function showFloatingButton(x: number, y: number, text: string) {
+function showFloatingButton(x: number, y: number, text: string, range: Range) {
     createSidebarIfNeeded();
     const host = document.getElementById('linguastik-lens-host');
     if (!host || !host.shadowRoot) return;
+
+    const savedRange = range.cloneRange();
 
     if (!floatingBtn) {
         floatingBtn = document.createElement('div');
@@ -278,7 +280,6 @@ function showFloatingButton(x: number, y: number, text: string) {
 
     const btnWidth = 110;
     const finalX = Math.max(10, Math.min(window.innerWidth - btnWidth - 10, x - (btnWidth / 2)));
-    const finalY = y + window.scrollY;
 
     floatingBtn.style.left = `${finalX}px`;
     floatingBtn.style.top = `${y}px`;
@@ -291,12 +292,64 @@ function showFloatingButton(x: number, y: number, text: string) {
     floatingBtn.onclick = (e) => {
         e.stopPropagation();
         e.preventDefault();
-
-        const rect = floatingBtn!.getBoundingClientRect();
         removeFloatingButton();
-
-        showTranslationInSidebar(text);
+        replaceSelectionWithTranslation(text, savedRange);
     };
+}
+
+function replaceSelectionWithTranslation(text: string, range: Range) {
+    if (!document.getElementById('linguastik-inline-style')) {
+        const style = document.createElement('style');
+        style.id = 'linguastik-inline-style';
+        style.textContent = `
+            @keyframes lg-shimmer {
+                0%   { background-position: -200% center; }
+                100% { background-position:  200% center; }
+            }
+            .lg-shimmer {
+                display: inline-block;
+                min-width: 60px;
+                height: 0.85em;
+                border-radius: 4px;
+                vertical-align: middle;
+                background: linear-gradient(
+                    90deg,
+                    rgba(0,229,255,0.06) 25%,
+                    rgba(0,229,255,0.22) 50%,
+                    rgba(0,229,255,0.06) 75%
+                );
+                background-size: 200% auto;
+                animation: lg-shimmer 1.3s linear infinite;
+            }
+            .lg-translated {
+                text-decoration: underline;
+                text-decoration-style: dashed;
+                text-decoration-color: rgba(0,229,255,0.55);
+                text-underline-offset: 3px;
+                cursor: help;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    range.deleteContents();
+    const shimmer = document.createElement('span');
+    shimmer.className = 'lg-shimmer';
+    shimmer.style.width = `${Math.min(Math.max(60, text.length * 7), 300)}px`;
+    range.insertNode(shimmer);
+    window.getSelection()?.removeAllRanges();
+
+    chrome.runtime.sendMessage({ type: 'TRANSLATE_SELECTION', text }, (response) => {
+        if (response && response.success && response.translation) {
+            const span = document.createElement('span');
+            span.className = 'lg-translated';
+            span.title = `Original: ${text}`;
+            span.textContent = response.translation;
+            shimmer.replaceWith(span);
+        } else {
+            shimmer.replaceWith(document.createTextNode(text));
+        }
+    });
 }
 
 function showTranslationInSidebar(text: string) {
