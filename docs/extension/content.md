@@ -1,6 +1,6 @@
 # `extension/src/content.ts`
 
-> **Role**: The content script injected into web pages. It creates the Linguastik sidebar UI, monitors search queries, and handles text selection for quick translation.
+> **Role**: The content script injected into web pages. It creates the Linguastik sidebar UI, monitors search queries, and handles text selection with inline translation.
 
 **Source**: [`extension/src/content.ts`](../../packages/extension/src/content.ts)  
 **Runs in**: The context of the active web page (Google, Bing, etc.)
@@ -22,7 +22,7 @@ if ((window as any).hasLingoContentScriptLoaded) {
 (window as any).hasLingoContentScriptLoaded = true;
 ```
 
-This guard prevents the script from initializing more than once if it gets injected multiple times (which can happen with Chrome's scripting API).
+Prevents the script from initializing more than once if injected multiple times.
 
 ---
 
@@ -30,34 +30,11 @@ This guard prevents the script from initializing more than once if it gets injec
 
 ### `getQueryFromURL(): string`
 
-Parses the `q` parameter from the current URL's query string.
-
-```typescript
-const params = new URLSearchParams(window.location.search);
-return params.get("q") || "";
-```
-
-Works with any search engine that uses the standard `?q=` parameter (Google, Bing, DuckDuckGo, etc.).
-
----
+Parses the `q` parameter from the current URL's query string. Works with any search engine that uses `?q=`.
 
 ### URL Polling (1-second interval)
 
-Single-page apps like Google Search update the URL without a full page reload. A polling interval checks for URL changes:
-
-```typescript
-setInterval(() => {
-  const current = getQueryFromURL();
-  if (current && current !== lastQuery) {
-    lastQuery = current;
-    checkEnabledAndSearch(current);
-  }
-}, 1000);
-```
-
-This ensures that when a user performs a new search, Linguastik reacts within one second.
-
----
+Single-page apps like Google Search update the URL without a full page reload. A polling interval checks for URL changes and triggers a new search if the query changes.
 
 ### `checkEnabledAndSearch(query)`
 
@@ -69,37 +46,32 @@ Checks if the extension is enabled in `chrome.storage.sync` before proceeding. I
 
 ### `createSidebarIfNeeded(query?: string)`
 
-Creates the entire Linguastik UI if it hasn't been injected yet. Uses a **Shadow DOM** to ensure that the extension's styles are completely isolated from the host website.
+Creates the Linguastik UI if it hasn't been injected yet. Uses a **Shadow DOM** to ensure the extension's styles are completely isolated from the host website.
 
 **Structure injected into `document.body`**:
 
 ```
 <div id="linguastik-lens-host"> (position: fixed, z-index: max, pointer-events: none)
   #shadow-root
-    ├─ <style>  <- all Linguastik CSS
-    ├─ .sidebar          (right panel — search results)
-    ├─ .sidebar-left     (left panel — quick translate)
-    ├─ .toggle-btn       (right edge floating button)
-    └─ .toggle-btn-left  (left edge floating button)
+    ├─ <style>       ← all Linguastik CSS
+    ├─ .sidebar      (right panel — search results)
+    └─ .toggle-btn   (right edge floating button)
 ```
 
-The host element itself has `pointer-events: none` to prevent it from blocking clicks on the underlying page. Individual sidebar elements re-enable `pointer-events: auto`.
+The host element has `pointer-events: none`; individual sidebar elements re-enable `pointer-events: auto`.
 
 **Shadow DOM is used because**:
-
-- The host website's CSS (e.g., `* { box-sizing: border-box; }`) would break Linguastik's styles.
-- JavaScript from the host page cannot accidentally access or modify Linguastik's internal DOM.
+- Host website CSS would break Linguastik's styles.
+- Host page JavaScript cannot access Linguastik's internal DOM.
 
 ---
 
 ### `handleNewSearch(query)`
 
-Called whenever a new search is detected. It:
-
+Called on new search detection. It:
 1. Sends a `NEW_SEARCH` message to the background script.
 2. Calls `createSidebarIfNeeded(query)` to ensure the sidebar exists.
-3. Makes the sidebar visible.
-4. Renders the loading state via `renderLoading(query)`.
+3. Makes the sidebar visible and renders the loading state.
 
 ---
 
@@ -107,8 +79,7 @@ Called whenever a new search is detected. It:
 
 ### `SEARCH_RESULTS`
 
-Received from `background.ts` after the multi-lingual search is complete.
-
+Received after the multi-lingual search is complete.
 - Calls `renderSidebar(message.data)` and injects the HTML into `#result-content`.
 - Updates the region tag pills in the header.
 - Hides the translation overlay.
@@ -116,20 +87,18 @@ Received from `background.ts` after the multi-lingual search is complete.
 ### `SEARCH_ERROR`
 
 Received when something fails in the background.
-
-- Calls `renderError(message.error)` and injects the HTML.
+- Renders the error via `renderError(message.error)`.
 
 ### `SEARCH_LOADING`
 
 Received when the background is about to start processing.
-
-- Creates the sidebar if it doesn't exist.
-- Makes the sidebar visible.
-- Shows the loading state and translating overlay.
+- Creates the sidebar if needed, makes it visible, shows the loading state.
 
 ---
 
-## Text Selection & Quick Translation
+## Text Selection — Inline Translation
+
+When the user selects text on any page, a floating translate button appears near the selection. Clicking it **replaces the selected text in-place** with a translation, without opening any sidebar.
 
 ### Event Listeners
 
@@ -142,42 +111,60 @@ Received when the background is about to start processing.
 
 ### `handleSelection()`
 
-Checks if the user has selected (highlighted) text. If so, computes the bounding rectangle of the selection and calls `showFloatingButton(x, y, text)`.
+Checks if the user has selected visible text. If so, computes the bounding rectangle and calls `showFloatingButton(x, y, text, range)`. The `Range` object is passed through so it can be cloned immediately (clicking the button clears the live selection).
 
-### `showFloatingButton(x, y, text)`
+### `showFloatingButton(x, y, text, range)`
 
-Injects a floating translate button into the shadow DOM near the selected text. On click:
+Injects a floating translate button into the shadow DOM near the selected text. The range is cloned on creation. On click:
+- The floating button is removed.
+- `replaceSelectionWithTranslation(text, savedRange)` is called.
 
-- The selection is preserved.
-- `removeFloatingButton()` is called.
-- `showTranslationInSidebar(text)` is triggered.
+### `replaceSelectionWithTranslation(text, range)`
 
-### `showTranslationInSidebar(text)`
+The core inline translation function. Full flow:
 
-1. Opens the left sidebar.
-2. Shows a "Translating..." placeholder.
-3. Activates the loading overlay.
-4. Sends a `TRANSLATE_SELECTION` message to the background script.
-5. On response, renders the translated text with the language name and the original text as a preview.
+```
+1. range.surroundContents(wrapper)       ← wraps selection in <span.lg-translating>
+   └─ fallback: extractContents()        ← if selection crosses element boundaries
+
+2. Save wrapper.innerHTML                ← original HTML snapshot for revert
+
+3. Send TRANSLATE_SELECTION_HTML        ← background calls translator.translateHtml(html)
+   └─ API receives: data: { html: ... }
+   └─ API returns:  data: { html: ... }  ← translated HTML, tags preserved
+
+4a. response.html exists:
+    └─ wrapper.innerHTML = response.html ← sets translated HTML (bold/links/images intact)
+
+4b. Fallback (no HTML response):
+    └─ First text node = full translation
+    └─ Other text nodes cleared
+
+5. wrapper.className = 'lg-translated'
+   wrapper.dataset.lgOriginalHtml = originalHTML
+```
+
+**Shimmer during translation**: `.lg-translating` applies a cyan pulse animation while waiting.
+
+**After translation**: `.lg-translated` applies a dashed cyan underline (`text-decoration-style: dashed`).
+
+**On hover**: A dark tooltip card appears above the translated span showing:
+- The original text
+- A **↩ Revert** button
+
+**On revert**: `wrapper.innerHTML` is restored from `data-lg-original-html`, then the wrapper is unwrapped (children promoted in-place). The full original DOM — bold, links, emojis — is exactly restored.
 
 ---
 
-## Language Map
+## Inline Style Injection
 
-```typescript
-const LANG_MAP: Record<string, string> = {
-  'en': 'English', 'es': 'Spanish', 'fr': 'French', 'de': 'German',
-  'it': 'Italian', 'pt': 'Portuguese', 'ru': 'Russian', 'zh': 'Chinese',
-  'ja': 'Japanese', 'ko': 'Korean', 'hi': 'Hindi', 'ar': 'Arabic', ...
-};
-```
-
-Used by `getLangName(code)` to display a human-readable language name in the translation result card.
+On first translation, a `<style id="linguastik-inline-style">` element is injected into the host page's `<head>` with all `.lg-*` CSS rules. A shared `#lg-tooltip` div is also appended to `document.body`. Both are created only once and reused for all subsequent translations on that page.
 
 ---
 
 ## Related Modules
 
-- [`background.ts`](../../docs/extension/background.md) — receives `NEW_SEARCH` and `TRANSLATE_SELECTION` messages
-- [`extension/src/ui/sidebar.ts`](../../packages/extension/src/ui/sidebar.ts) — `renderSidebar`, `renderLoading`, `renderError` HTML generators
-- [`extension/src/ui/styles.ts`](../../packages/extension/src/ui/styles.ts) — CSS string injected into the Shadow DOM
+- [`background.ts`](./background.md) — receives `NEW_SEARCH`, `TRANSLATE_SELECTION_HTML` messages
+- [`extension/src/ui/sidebar.ts`](../../packages/extension/src/ui/sidebar.ts) — `renderSidebar`, `renderLoading`, `renderError`
+- [`extension/src/ui/styles.ts`](../../packages/extension/src/ui/styles.ts) — CSS injected into Shadow DOM
+- [`translator.ts`](./translator.md) — `translateHtml()` for HTML-aware translation

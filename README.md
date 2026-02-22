@@ -49,7 +49,7 @@ Linguastik is a developer toolset that makes the web and your command line reada
 
 ![SearchResult](./assets/extension/query_result.png)
 
-- **Quick translate** — highlight any text on a webpage and instantly see its translation in a slide-out sidebar.
+- **Inline translate** — highlight any text on a webpage and click the floating translate button to replace it in-place with the translated version. Structure (bold, links, emojis) is preserved. Hover to see the original; click **↩ Revert** to restore it.
 
 ![QuickTranslate](./assets/extension/select_translate1.png)
 ![QuickTranslate](./assets/extension/select_translate2.png)

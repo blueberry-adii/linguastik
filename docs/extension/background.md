@@ -22,11 +22,12 @@ All results are then sent back to the active tab's content script for rendering 
 
 The background script listens for messages on `chrome.runtime.onMessage` and dispatches to specific handlers based on `message.type`:
 
-| Message Type          | Sender                   | Handler                    | Description                         |
-| --------------------- | ------------------------ | -------------------------- | ----------------------------------- |
-| `NEW_SEARCH`          | `content.ts`, `popup.ts` | `handleSearch()`           | Trigger a full multi-lingual search |
-| `TRANSLATE_SELECTION` | `content.ts`             | `handleQuickTranslation()` | Translate a selected text snippet   |
-| `IDENTIFY_OBJECT`     | `popup.ts`               | inline async               | Analyze an image with Gemini AI     |
+| Message Type               | Sender       | Handler                    | Description                                      |
+| -------------------------- | ------------ | -------------------------- | ------------------------------------------------ |
+| `NEW_SEARCH`               | `content.ts`, `popup.ts` | `handleSearch()`           | Trigger a full multi-lingual search  |
+| `TRANSLATE_SELECTION`      | `content.ts` | `handleQuickTranslation()` | Translate a plain text snippet                   |
+| `TRANSLATE_SELECTION_HTML` | `content.ts` | `handleHtmlTranslation()`  | Translate HTML, preserving tags (bold, links, etc.) |
+| `IDENTIFY_OBJECT`          | `popup.ts`   | inline async               | Analyze an image with Gemini AI                  |
 
 All handlers return `true` to signal that the response is asynchronous.
 
@@ -101,17 +102,27 @@ const map = {
 
 ## `handleQuickTranslation(text)`
 
-A simpler handler for when a user selects text and clicks the floating translate button.
+Fallback handler for plain text translation of a selected snippet.
 
-| Parameter | Type     | Description                    |
-| --------- | -------- | ------------------------------ |
-| `text`    | `string` | The selected text to translate |
+1. Loads config, resolves `targetLang` from `userLanguage` (defaults to `'en'` if `'auto'`).
+2. Calls `translator.translate(text, targetLang)`.
+3. Returns `{ translation, lang }` via `sendResponse`.
+
+---
+
+## `handleHtmlTranslation(html)`
+
+Primary handler for the inline select-to-translate feature. Receives the selected content as an **HTML string** (with bold, link, and image tags intact) and returns a translated HTML string.
+
+| Parameter | Type     | Description                         |
+| --------- | -------- | ----------------------------------- |
+| `html`    | `string` | Inner HTML of the selected wrapper  |
 
 **Flow**:
 
-1. Loads config, resolves `targetLang` from `userLanguage` (if `'auto'`, defaults to `'en'`).
-2. Calls `translator.translate(text, targetLang)`.
-3. Returns `{ translation, lang }` to the caller via `sendResponse`.
+1. Loads config, resolves `targetLang`.
+2. Calls `translator.translateHtml(html, targetLang)`.
+3. Returns `{ html: translatedHtml, lang }` — the HTML structure (bold, links, images) is preserved by the API, only the text content is translated.
 
 ---
 

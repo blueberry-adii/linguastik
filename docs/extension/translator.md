@@ -113,20 +113,53 @@ const translation = await this.translate(combined, targetLang);
 return translation || "Summary unavailable (Translation failed).";
 ```
 
-Takes only the first 3 snippets to keep the payload small. Delegates to `translate()` rather than a dedicated summary endpoint — translation of combined snippets serves as a practical approximation of summarization.
+Takes only the first 3 snippets to keep the payload small. Delegates to `translate()` rather than a dedicated summary endpoint.
+
+---
+
+### `translateHtml(html, targetLang): Promise<string | null>`
+
+Translates an HTML string while preserving its tag structure. Used by the inline select-to-translate feature so that **bold**, **links**, **images**, and other inline elements remain intact in the translated output.
+
+| Parameter    | Type     | Description                                       |
+| ------------ | -------- | ------------------------------------------------- |
+| `html`       | `string` | Inner HTML of the selected wrapper span           |
+| `targetLang` | `string` | BCP-47 target locale code (e.g., `'en'`, `'es'`) |
+
+**Returns**: Translated HTML string, or `null` on failure.
+
+#### API Call
+
+```typescript
+POST https://engine.lingo.dev/i18n
+Authorization: Bearer <lingoApiKey>
+
+{
+  "params": { "workflowId": "<uuid>", "fast": true },
+  "locale": { "source": "auto", "target": "en" },
+  "data": {
+    "html": "<strong>太字テキスト</strong> 普通のテキスト"
+  }
+}
+```
+
+**Response**: `{ data: { html: "<strong>Bold text</strong> Normal text" } }`
+
+The Lingo.dev API translates only the text nodes inside the HTML and returns the same tag structure unchanged.
 
 ---
 
 ## Comparison: Extension vs. Shared Translator
 
-| Feature            | `shared/translator.ts`            | `extension/translator.ts`              |
-| ------------------ | --------------------------------- | -------------------------------------- |
-| SDK                | `LingoDotDevEngine` (Node.js SDK) | Direct `fetch` to REST API             |
-| Config Access      | `configManager.get()` (fs-based)  | `chrome.storage.sync` (extension shim) |
-| Caching            | Two-tier (memory + disk)          | None (stateless per call)              |
-| Language Detection | Not supported                     | `/recognize` endpoint                  |
-| Summary Generation | Not supported                     | Via `translate()` on joined snippets   |
-| Environment        | Node.js (CLI)                     | Browser (Manifest V3 Service Worker)   |
+| Feature              | `shared/translator.ts`            | `extension/translator.ts`              |
+| -------------------- | --------------------------------- | -------------------------------------- |
+| SDK                  | `LingoDotDevEngine` (Node.js SDK) | Direct `fetch` to REST API             |
+| Config Access        | `configManager.get()` (fs-based)  | `chrome.storage.sync` (extension shim) |
+| Caching              | Two-tier (memory + disk)          | None (stateless per call)              |
+| Language Detection   | Not supported                     | `/recognize` endpoint                  |
+| Summary Generation   | Not supported                     | Via `translate()` on joined snippets   |
+| HTML Translation     | Not supported                     | `translateHtml()` via `data.html`      |
+| Environment          | Node.js (CLI)                     | Browser (Manifest V3 Service Worker)   |
 
 ---
 
