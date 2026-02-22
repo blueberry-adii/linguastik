@@ -105,28 +105,6 @@ function createSidebarIfNeeded(query: string = '') {
     `;
     shadow.appendChild(container);
 
-    // Left Sidebar (Translations)
-    const leftSidebar = document.createElement('div');
-    leftSidebar.className = 'sidebar-left';
-    leftSidebar.style.pointerEvents = 'auto';
-    leftSidebar.innerHTML = `
-        <header>
-            <h1>
-                <svg viewBox="0 0 24 24"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.09-.09 2.54-2.51.13.56zm5.66-2.54l-2.53 7L14 19l4.5 9H20l1.25-3.5h5.5L28 28h1.5l4.5-9h-1.97l-2.53-7H18.53zM22.5 22h-3l1.5-4.25L22.5 22z"/></svg>
-                Quick Translate
-            </h1>
-            <button class="close-btn-left">&times;</button>
-        </header>
-        <div id="translation-content" class="content-padding">
-            <div class="empty-state">No translations yet</div>
-        </div>
-        <div id="sidebarLeftTranslationOverlay" class="translation-overlay">
-            <div class="translation-overlay-spinner"></div>
-            <div class="translation-overlay-text" data-i18n="translatingOverlay">Translating...</div>
-        </div>
-    `;
-    shadow.appendChild(leftSidebar);
-
     // Toggle Button (Right - Search)
     const toggleBtn = document.createElement('button');
     toggleBtn.className = 'toggle-btn';
@@ -146,30 +124,9 @@ function createSidebarIfNeeded(query: string = '') {
         container.classList.add('visible');
     });
 
-    // Toggle Button (Left - Quick Translate)
-    const toggleBtnLeft = document.createElement('button');
-    toggleBtnLeft.className = 'toggle-btn-left';
-    toggleBtnLeft.id = 'linguastik-toggle-left';
-    toggleBtnLeft.innerHTML = `
-        <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg> 
-    `;
-    toggleBtnLeft.title = "Open Quick Translate";
-    toggleBtnLeft.style.pointerEvents = 'auto';
-    shadow.appendChild(toggleBtnLeft);
-
-    toggleBtnLeft.addEventListener('click', () => {
-        leftSidebar.classList.add('visible');
-    });
-
-    // Close Handlers
     container.querySelector('.close-btn')?.addEventListener('click', () => {
         container.classList.remove('visible');
     });
-
-    leftSidebar.querySelector('.close-btn-left')?.addEventListener('click', () => {
-        leftSidebar.classList.remove('visible');
-    });
-
 
 }
 
@@ -438,66 +395,6 @@ function replaceSelectionWithTranslation(text: string, range: Range) {
     });
 }
 
-function showTranslationInSidebar(text: string) {
-    createSidebarIfNeeded();
-    const host = document.getElementById('linguastik-lens-host');
-    if (!host || !host.shadowRoot) return;
-
-    const leftSidebar = host.shadowRoot.querySelector('.sidebar-left');
-    const content = host.shadowRoot.getElementById('translation-content');
-    const toggleLeft = host.shadowRoot.getElementById('linguastik-toggle-left');
-
-    if (leftSidebar && content) {
-        leftSidebar.classList.add('visible');
-        if (toggleLeft) toggleLeft.style.display = 'flex';
-
-        content.innerHTML = `
-            <div class="linguastik-popup-header">
-                Translating...
-            </div>
-        `;
-
-        const overlay = host.shadowRoot.getElementById('sidebarLeftTranslationOverlay');
-        if (overlay) overlay.classList.add('active');
-
-        chrome.runtime.sendMessage({ type: 'TRANSLATE_SELECTION', text }, (response) => {
-            if (overlay) overlay.classList.remove('active');
-
-            if (response && response.success) {
-                const langName = getLangName(response.lang);
-                content.innerHTML = `
-                     <div class="translation-result">
-                        <div class="translation-meta">
-                            <span class="lang-tag">${langName}</span>
-                        </div>
-                        <p class="translated-text">${response.translation}</p>
-                        <div class="original-text-preview">
-                            <small>Original:</small>
-                            <p>${text}</p>
-                        </div>
-                    </div>
-                `;
-            } else {
-                content.innerHTML = `
-                    <div class="error-message">
-                        ${response?.error || "Failed to translate."}
-                    </div>
-                `;
-            }
-        });
-    }
-}
-
-const LANG_MAP: Record<string, string> = {
-    'en': 'English', 'es': 'Spanish', 'fr': 'French', 'de': 'German',
-    'it': 'Italian', 'pt': 'Portuguese', 'ru': 'Russian', 'zh': 'Chinese',
-    'ja': 'Japanese', 'ko': 'Korean', 'hi': 'Hindi', 'ar': 'Arabic',
-    'tr': 'Turkish', 'nl': 'Dutch', 'pl': 'Polish', 'sv': 'Swedish'
-};
-
-function getLangName(code: string): string {
-    return LANG_MAP[code] || code.toUpperCase();
-}
 
 function updateRightToggleVisibility(query: string) {
     const host = document.getElementById('linguastik-lens-host');
