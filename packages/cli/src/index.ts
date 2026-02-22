@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import { createRequire } from 'module';
-import { configManager, explainer } from '@linguastik/shared';
-import { execWithTranslation } from './wrapper.js';
+import { configManager, translator } from '@linguastik/shared';
+import { execWithTranslation, execAndCapture } from './wrapper.js';
 import { format } from './formatter.js';
 
 const require = createRequire(import.meta.url);
@@ -18,7 +18,7 @@ program
 program
     .option('-l, --lang <lang>', 'Target language code (e.g., es, ja, fr)')
     .option('-k, --key <key>', 'Set Lingo.dev API key')
-    .option('--explain', 'Explain any errors encountered')
+    .option('-p, --precise', 'Run command and send full output to lingo.dev for an accurate, context-aware translation')
     .argument('[command...]', 'Command to run and translate')
     .allowUnknownOption(true)
     .passThroughOptions(true)
@@ -50,51 +50,26 @@ program
             console.log(format.info('Run `lingo --key <your-api-key>` to set it.'));
         }
 
-        let capturedStderr = '';
         try {
-            if (options.explain) {
-                const originalStderrWrite = process.stderr.write;
-                process.stderr.write = function (chunk: any, encoding?: any, cb?: any): boolean {
-                    capturedStderr += chunk.toString();
-                    return originalStderrWrite.call(process.stderr, chunk, encoding, cb);
-                } as any;
+            if (options.precise) {
+                const { output, exitCode } = await execAndCapture(command, args);
+
+                if (output.trim() && configManager.getApiKey()) {
+                    const spinner = format.spinner('Analyzing output...').start();
+                    const summary = await translator.summarize(output);
+                    spinner.stop();
+
+                    console.log('\n' + format.box('✦ Linguastik', summary, 'blue'));
+                }
+
+                process.exit(exitCode);
+            } else {
+                await execWithTranslation(command, args);
             }
-            await execWithTranslation(command, args);
-        }
-        catch (error: any) {
-            if (options.explain && error.message) {
-                capturedStderr += '\n' + error.message;
-            }
+        } catch (error: any) {
             console.error(format.error(`Execution failed: ${error.message || error}`));
             process.exitCode = 1;
-        } finally {
-            if (options.explain && capturedStderr) {
-                console.log('\n--- Error Explanation ---\n');
-                const explanation = await explainer.explain(capturedStderr);
-                if (explanation) {
-                    const severityColor = explanation.severity === 'error' ? 'red' :
-                        explanation.severity === 'warning' ? 'yellow' : 'blue';
-
-                    const content = `
-${format.dim(`Tool: ${explanation.tool}`)}
-${format.error(`Problem: ${explanation.problem}`)}
-
-${explanation.causes && explanation.causes.length > 0 ? format.dim('Possible causes:') + '\n' + explanation.causes.map((c: string) => `  - ${c}`).join('\n') : ''}
-
-${explanation.fixes && explanation.fixes.length > 0 ? format.success('Suggested fixes:') + '\n' + explanation.fixes.map((f: string) => `  - ${f}`).join('\n') : ''}
-
-${explanation.learnMoreUrl ? format.dim(`Learn more: ${explanation.learnMoreUrl}`) : ''}
-                    `.trim();
-
-                    console.log(format.box(`[${explanation.severity.toUpperCase()}] ${explanation.title}`, content, severityColor));
-                } else {
-                    console.log(format.dim('No specific error pattern matched for explanation.'));
-                }
-            }
-
-            if (process.exitCode) {
-                process.exit(process.exitCode);
-            }
+            process.exit(1);
         }
     });
 

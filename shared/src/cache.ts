@@ -5,13 +5,23 @@ import * as crypto from 'crypto';
 import * as os from 'os';
 
 const CACHE_DIR = path.join(os.homedir(), '.lingo-dev', 'cache');
-const TRANSLATIONS_DIR = path.join(CACHE_DIR, 'translations');
 
 export class TranslationCache {
     private memoryCache: NodeCache;
+    private namespace: string;
+    private ttlSeconds: number;
 
-    constructor(ttlSeconds: number = 3600) {
+    constructor(ttlSeconds: number = 3600, namespace: string = 'default') {
+        this.ttlSeconds = ttlSeconds;
+        this.namespace = namespace;
         this.memoryCache = new NodeCache({ stdTTL: ttlSeconds });
+        this.ensureCacheDirs();
+    }
+
+    public setNamespace(ns: string) {
+        if (this.namespace === ns) return;
+        this.namespace = ns;
+        this.memoryCache.flushAll();
         this.ensureCacheDirs();
     }
 
@@ -22,15 +32,19 @@ export class TranslationCache {
             .digest('hex');
     }
 
+    private get translationsDir(): string {
+        return path.join(CACHE_DIR, 'translations', this.namespace);
+    }
+
     private ensureCacheDirs() {
-        if (!fs.existsSync(TRANSLATIONS_DIR)) {
-            fs.mkdirSync(TRANSLATIONS_DIR, { recursive: true });
+        if (!fs.existsSync(this.translationsDir)) {
+            fs.mkdirSync(this.translationsDir, { recursive: true });
         }
     }
 
     private getFilePath(hash: string): string {
         const shard = hash.substring(0, 2);
-        const shardDir = path.join(TRANSLATIONS_DIR, shard);
+        const shardDir = path.join(this.translationsDir, shard);
         if (!fs.existsSync(shardDir)) {
             fs.mkdirSync(shardDir, { recursive: true });
         }

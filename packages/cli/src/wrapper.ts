@@ -110,3 +110,34 @@ export async function execWithTranslation(command: string, args: string[]) {
         });
     });
 }
+
+export async function execAndCapture(command: string, args: string[]): Promise<{ output: string; exitCode: number }> {
+    return new Promise((resolve, reject) => {
+        const child = spawn(command, args, {
+            stdio: ['inherit', 'pipe', 'pipe'],
+            shell: false,
+        });
+
+        let captured = '';
+
+        child.stdout.on('data', (data) => {
+            const chunk = data.toString();
+            captured += chunk;
+            process.stdout.write(chunk);
+        });
+
+        child.stderr.on('data', (data) => {
+            const chunk = data.toString();
+            captured += chunk;
+            process.stderr.write(chunk);
+        });
+
+        child.on('close', (code) => {
+            resolve({ output: captured, exitCode: code || 0 });
+        });
+
+        child.on('error', (err) => {
+            reject(err);
+        });
+    });
+}
