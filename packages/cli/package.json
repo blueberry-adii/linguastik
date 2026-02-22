@@ -12,5 +12,11 @@
   },
   "bin": {
     "lingo": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
   }
 }
