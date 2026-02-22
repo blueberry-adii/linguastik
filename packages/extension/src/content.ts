@@ -259,24 +259,15 @@ function replaceSelectionWithTranslation(text: string, range: Range) {
         const style = document.createElement('style');
         style.id = 'linguastik-inline-style';
         style.textContent = `
-            @keyframes lg-shimmer {
-                0%   { background-position: -200% center; }
-                100% { background-position:  200% center; }
+            @keyframes lg-pulse {
+                0%, 100% { opacity: 0.35; }
+                50%       { opacity: 0.7; }
             }
-            .lg-shimmer {
-                display: inline-block;
-                min-width: 60px;
-                height: 0.85em;
-                border-radius: 4px;
-                vertical-align: middle;
-                background: linear-gradient(
-                    90deg,
-                    rgba(0,229,255,0.06) 25%,
-                    rgba(0,229,255,0.22) 50%,
-                    rgba(0,229,255,0.06) 75%
-                );
-                background-size: 200% auto;
-                animation: lg-shimmer 1.3s linear infinite;
+            .lg-translating {
+                border-radius: 3px;
+                animation: lg-pulse 1.2s ease-in-out infinite;
+                background: rgba(0,229,255,0.08);
+                outline: 1px solid rgba(0,229,255,0.18);
             }
             .lg-translated {
                 text-decoration: underline;
@@ -337,20 +328,21 @@ function replaceSelectionWithTranslation(text: string, range: Range) {
 
         let hideTimer: ReturnType<typeof setTimeout> | null = null;
 
-        const showTooltip = (span: HTMLElement) => {
+        const showTooltip = (el: HTMLElement) => {
             if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
-            const original = span.dataset.lgOriginal || '';
+            const original = el.dataset.lgOriginal || '';
             tooltip.innerHTML = `
                 <div class="lg-orig-label">Original</div>
                 <p class="lg-orig-text">${original}</p>
                 <button class="lg-revert-btn">↩ Revert</button>
             `;
             tooltip.querySelector('.lg-revert-btn')!.addEventListener('click', () => {
-                span.replaceWith(document.createTextNode(original));
+                el.innerHTML = el.dataset.lgOriginalHtml || el.dataset.lgOriginal || '';
+                el.replaceWith(...Array.from(el.childNodes));
                 tooltip.classList.remove('lg-visible');
             });
 
-            const rect = span.getBoundingClientRect();
+            const rect = el.getBoundingClientRect();
             const tipW = 280;
             const left = Math.min(Math.max(8, rect.left + rect.width / 2 - tipW / 2), window.innerWidth - tipW - 8);
             tooltip.style.left = `${left}px`;
@@ -364,35 +356,63 @@ function replaceSelectionWithTranslation(text: string, range: Range) {
         };
 
         document.addEventListener('mouseover', (e) => {
-            const span = (e.target as Element).closest('.lg-translated') as HTMLElement | null;
-            if (span) showTooltip(span);
+            const el = (e.target as Element).closest('.lg-translated') as HTMLElement | null;
+            if (el) showTooltip(el);
         });
         document.addEventListener('mouseout', (e) => {
-            const span = (e.target as Element).closest('.lg-translated');
-            if (span) hideTooltip();
+            if ((e.target as Element).closest('.lg-translated')) hideTooltip();
         });
         tooltip.addEventListener('mouseenter', () => { if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; } });
         tooltip.addEventListener('mouseleave', hideTooltip);
     }
 
-    range.deleteContents();
-    const shimmer = document.createElement('span');
-    shimmer.className = 'lg-shimmer';
-    shimmer.style.width = `${Math.min(Math.max(60, text.length * 7), 300)}px`;
-    range.insertNode(shimmer);
+    const wrapper = document.createElement('span');
+    wrapper.className = 'lg-translating';
+
+    try {
+        range.surroundContents(wrapper);
+    } catch {
+        const fragment = range.extractContents();
+        wrapper.appendChild(fragment);
+        range.insertNode(wrapper);
+    }
+
     window.getSelection()?.removeAllRanges();
 
-    chrome.runtime.sendMessage({ type: 'TRANSLATE_SELECTION', text }, (response) => {
-        if (response && response.success && response.translation) {
-            const span = document.createElement('span');
-            span.className = 'lg-translated';
-            span.dataset.lgOriginal = text;
-            span.textContent = response.translation;
-            shimmer.replaceWith(span);
-        } else {
-            shimmer.replaceWith(document.createTextNode(text));
+    const originalHTML = wrapper.innerHTML;
+
+    const textNodes: Text[] = [];
+    const tw = document.createTreeWalker(wrapper, NodeFilter.SHOW_TEXT);
+    let tn: Node | null;
+    while ((tn = tw.nextNode())) {
+        if ((tn as Text).textContent?.trim()) textNodes.push(tn as Text);
+    }
+
+    if (textNodes.length === 0) {
+        wrapper.classList.remove('lg-translating');
+        return;
+    }
+
+    chrome.runtime.sendMessage(
+        { type: 'TRANSLATE_SELECTION_HTML', html: wrapper.innerHTML },
+        (response) => {
+            if (response && response.success && response.html) {
+                wrapper.innerHTML = response.html;
+                wrapper.className = 'lg-translated';
+                wrapper.dataset.lgOriginal = text;
+                wrapper.dataset.lgOriginalHtml = originalHTML;
+            } else if (response && response.success && response.translation) {
+                textNodes[0].textContent = response.translation;
+                for (let i = 1; i < textNodes.length; i++) textNodes[i].textContent = '';
+                wrapper.className = 'lg-translated';
+                wrapper.dataset.lgOriginal = text;
+                wrapper.dataset.lgOriginalHtml = originalHTML;
+            } else {
+                wrapper.innerHTML = originalHTML;
+                wrapper.replaceWith(...Array.from(wrapper.childNodes));
+            }
         }
-    });
+    );
 }
 
 

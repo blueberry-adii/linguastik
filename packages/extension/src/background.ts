@@ -27,6 +27,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             .then(result => sendResponse({ success: true, ...result }))
             .catch(err => sendResponse({ success: false, error: err.message }));
         return true;
+    } else if (message.type === 'TRANSLATE_SELECTION_HTML') {
+        handleHtmlTranslation(message.html)
+            .then(result => sendResponse({ success: true, ...result }))
+            .catch(err => sendResponse({ success: false, error: err.message }));
+        return true;
     } else if (message.type === 'IDENTIFY_OBJECT') {
         const { image, apiKey } = message.payload;
         if (!image || !apiKey) {
@@ -94,6 +99,13 @@ async function handleQuickTranslation(text: string) {
     const targetLang = config.userLanguage === 'auto' ? 'en' : (config.userLanguage || 'en');
     const translation = await translator.translate(text, targetLang);
     return { translation, lang: targetLang };
+}
+
+async function handleHtmlTranslation(html: string) {
+    const config = await configManager.load();
+    const targetLang = config.userLanguage === 'auto' ? 'en' : (config.userLanguage || 'en');
+    const translatedHtml = await translator.translateHtml(html, targetLang);
+    return { html: translatedHtml, lang: targetLang };
 }
 
 async function handleSearch(query: string, tabId: number) {

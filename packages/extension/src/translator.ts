@@ -51,6 +51,45 @@ export class ExtensionTranslator {
         }
     }
 
+    async translateHtml(html: string, targetLang: string): Promise<string | null> {
+        const config = await configManager.load();
+        const apiKey = config.lingoApiKey;
+
+        if (!apiKey) return null;
+
+        try {
+            const response = await fetch(`${LINGO_API_URL}/i18n`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    "params": {
+                        "workflowId": crypto.randomUUID(),
+                        "fast": true
+                    },
+                    "locale": {
+                        "source": "auto",
+                        "target": targetLang
+                    },
+                    "data": {
+                        "html": html
+                    }
+                })
+            });
+
+            if (!response.ok) return null;
+
+            const jsonResponse = await response.json();
+            return jsonResponse.data?.html || null;
+
+        } catch (e: any) {
+            console.error('HTML translation failed:', e.message || e);
+            return null;
+        }
+    }
+
     async detectLanguage(text: string): Promise<string> {
         const config = await configManager.load();
         const apiKey = config.lingoApiKey;
