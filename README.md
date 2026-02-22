@@ -51,7 +51,9 @@ Linguastik is a developer toolset that makes the web and your command line reada
 
 - **Quick translate** — highlight any text on a webpage and instantly see its translation in a slide-out sidebar.
 
-![QuickTranslate](./assets/extension/select_translate.png)
+![QuickTranslate](./assets/extension/select_translate1.png)
+![QuickTranslate](./assets/extension/select_translate2.png)
+![QuickTranslate](./assets/extension/select_translate3.png)
 
 - **Vision search** — upload or paste an image in the extension popup, and Gemini AI will identify what's in it and search for it across languages.
 
