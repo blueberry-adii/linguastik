@@ -702,7 +702,7 @@ export default function App() {
           <div className="flex items-center gap-2">
             <span>🌐</span>
             <span className="font-bold text-white/50">Lingua<span className="text-cyan-400/70">stik</span></span>
-            <span>— Built for the Lingo.dev Hackathon 2025</span>
+            <span>— Built for the Lingo.dev Hackathon 2026</span>
           </div>
           <div className="flex items-center gap-6">
             <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors duration-200">GitHub</a>
