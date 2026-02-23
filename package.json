@@ -8,6 +8,7 @@
     "shared"
   ],
   "scripts": {
+    "site": "cd landing && npm run build",
     "build": "tsc --build && npm run build --workspace=@linguastik/extension",
     "clean": "tsc --build --clean",
     "cli": "tsx packages/cli/src/index.ts",

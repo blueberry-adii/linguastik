@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="grad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="bggrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#050810"/>
+      <stop offset="100%" stop-color="#0e1533"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Dark rounded background -->
+  <rect width="64" height="64" rx="14" fill="url(#bggrad)"/>
+
+  <!-- Outer glow ring -->
+  <circle cx="32" cy="32" r="21" stroke="url(#grad)" stroke-width="1" stroke-opacity="0.25"/>
+
+  <!-- Globe outer circle -->
+  <circle cx="32" cy="32" r="17" stroke="url(#grad)" stroke-width="1.8"/>
+
+  <!-- Vertical meridian oval -->
+  <ellipse cx="32" cy="32" rx="7.5" ry="17" stroke="url(#grad)" stroke-width="1.2" stroke-opacity="0.5"/>
+
+  <!-- Equator line -->
+  <line x1="15" y1="32" x2="49" y2="32" stroke="url(#grad)" stroke-width="1.2" stroke-opacity="0.45"/>
+
+  <!-- Upper latitude arc -->
+  <path d="M 18.5 24 Q 32 20.5 45.5 24" stroke="url(#grad)" stroke-width="1" stroke-opacity="0.35" stroke-linecap="round"/>
+
+  <!-- Lower latitude arc -->
+  <path d="M 18.5 40 Q 32 43.5 45.5 40" stroke="url(#grad)" stroke-width="1" stroke-opacity="0.35" stroke-linecap="round"/>
+
+  <!-- Translation arrow → (cyan, upper half) -->
+  <line x1="24" y1="27.5" x2="37" y2="27.5" stroke="#22d3ee" stroke-width="1.8" stroke-linecap="round"/>
+  <polyline points="34,25 37,27.5 34,30" stroke="#22d3ee" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- Translation arrow ← (violet, lower half) -->
+  <line x1="40" y1="36.5" x2="27" y2="36.5" stroke="#8b5cf6" stroke-width="1.8" stroke-linecap="round"/>
+  <polyline points="30,34 27,36.5 30,39" stroke="#8b5cf6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

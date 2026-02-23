@@ -1,6 +1,8 @@
 <div align="center">
 
-# 🌐 Linguastik
+<img src="assets/icon.svg" alt="Linguastik" width="72" height="72" />
+
+# Linguastik
 
 **Break the language barrier in your terminal and your browser — powered by [Lingo.dev](https://lingo.dev) and Google Gemini.**
 

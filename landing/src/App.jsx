@@ -509,7 +509,7 @@ export default function App() {
       <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${scrolled ? 'bg-[#050810]/90 backdrop-blur-md border-b border-white/5 shadow-lg shadow-black/30' : ''}`}>
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <a href="#" onClick={handleAnchorClick} className="flex items-center gap-2.5">
-            <span className="text-2xl">🌐</span>
+            <img src="/icon.svg" alt="Linguastik" className="w-8 h-8 rounded-lg" />
             <span className="font-bold text-lg tracking-tight">Lingua<span className="text-cyan-400">stik</span></span>
           </a>
           <div className="hidden md:flex items-center gap-8">
