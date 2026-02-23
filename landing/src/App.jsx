@@ -400,22 +400,38 @@ function InstallSection() {
   )
 }
 
-/* ── connector between two tool cards ── */
+/* ── looping dashed-line connector ── */
+const LOOP_STYLE = `
+  @keyframes flowR { from{background-position:0 0} to{background-position:28px 0} }
+  @keyframes flowL { from{background-position:28px 0} to{background-position:0 0} }
+  .flow-r { animation: flowR 0.6s linear infinite; }
+  .flow-l { animation: flowL 0.6s linear infinite; }
+`
+
+function FlowLine({ dir }) {
+  const isRight = dir === 'right'
+  return (
+    <div className="flex items-center px-1 my-3">
+      <div className="relative flex-1 h-5 flex items-center">
+        <div
+          className={`absolute inset-x-4 h-[2px] ${isRight ? 'flow-r' : 'flow-l'}`}
+          style={{
+            backgroundImage: isRight
+              ? 'repeating-linear-gradient(90deg,#22d3ee 0,#22d3ee 8px,transparent 8px,transparent 12px,#818cf8 12px,#818cf8 20px,transparent 20px,transparent 28px)'
+              : 'repeating-linear-gradient(90deg,#8b5cf6 0,#8b5cf6 8px,transparent 8px,transparent 12px,#818cf8 12px,#818cf8 20px,transparent 20px,transparent 28px)',
+            backgroundSize: '28px 2px',
+            opacity: 0.75,
+          }}
+        />
+        <span className={`absolute text-[11px] ${isRight ? 'right-0 text-violet-400/60' : 'left-0 text-cyan-400/60'}`}>
+          {isRight ? '▶' : '◀'}
+        </span>
+      </div>
+    </div>
+  )
+}
+
 function ConnectedToolCards() {
-  const [flow, setFlow] = useState(0)
-  const rafRef = useRef(null)
-
-  useEffect(() => {
-    let start = null
-    const tick = (ts) => {
-      if (!start) start = ts
-      setFlow(((ts - start) / 2400) % 1)
-      rafRef.current = requestAnimationFrame(tick)
-    }
-    rafRef.current = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(rafRef.current)
-  }, [])
-
   const tools = [
     {
       icon: '⌨️',
@@ -437,20 +453,21 @@ function ConnectedToolCards() {
     },
   ]
 
-  const dotX = flow * 100
-  const dotY = 50
-
   return (
-    <div className="relative flex flex-col md:flex-row gap-0 items-stretch">
-      {tools.map((tool, idx) => (
-        <div key={tool.title} className="flex-1 flex">
+    <>
+      <style>{LOOP_STYLE}</style>
+      <FlowLine dir="right" />
+      <div className="flex flex-col md:flex-row gap-4">
+        {tools.map((tool) => (
           <a
+            key={tool.title}
             href={tool.href}
             onClick={handleAnchorClick}
             className={`group relative flex-1 rounded-2xl border
-              ${tool.accent === 'cyan' ? 'border-cyan-500/20 bg-gradient-to-br from-cyan-500/8 to-blue-600/8' : 'border-violet-500/20 bg-gradient-to-br from-violet-500/8 to-indigo-600/8'}
-              p-8 block transition-all duration-300 ease-out
-              hover:scale-[1.025]
+              ${tool.accent === 'cyan'
+                ? 'border-cyan-500/20 bg-gradient-to-br from-cyan-500/8 to-blue-600/8'
+                : 'border-violet-500/20 bg-gradient-to-br from-violet-500/8 to-indigo-600/8'}
+              p-8 block transition-all duration-300 ease-out hover:scale-[1.025]
               ${tool.accent === 'cyan' ? 'hover:shadow-cyan-500/10' : 'hover:shadow-violet-500/10'} hover:shadow-2xl`}
           >
             <div className="text-5xl mb-4">{tool.icon}</div>
@@ -463,33 +480,10 @@ function ConnectedToolCards() {
               ))}
             </div>
           </a>
-
-          {idx === 0 && (
-            <div className="hidden md:flex items-center justify-center flex-shrink-0 w-24 relative">
-              <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
-                <path d="M 0 50 C 40 50, 60 50, 100 50" fill="none" stroke="url(#connGrad)" strokeWidth="1.5" strokeDasharray="6 4" className="opacity-40" />
-                <circle cx={dotX} cy={dotY} r="5" fill="url(#dotGrad)" />
-                <defs>
-                  <linearGradient id="connGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#22d3ee" />
-                    <stop offset="100%" stopColor="#8b5cf6" />
-                  </linearGradient>
-                  <radialGradient id="dotGrad" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#fff" stopOpacity="0.9" />
-                    <stop offset="40%" stopColor="#22d3ee" stopOpacity="0.9" />
-                    <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
-                  </radialGradient>
-                </defs>
-              </svg>
-              <div className="relative z-10 flex flex-col items-center gap-1">
-                <span className="text-xl">🔗</span>
-                <span className="text-[9px] text-white/25 font-mono text-center leading-tight">shared<br />engine</span>
-              </div>
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+      <FlowLine dir="left" />
+    </>
   )
 }
 
