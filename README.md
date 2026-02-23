@@ -10,13 +10,15 @@
 [![Lingo.dev](https://img.shields.io/badge/Lingo.dev-8A3FFC?style=for-the-badge&logo=google-cloud&logoColor=white)](https://lingo.dev/)
 [![Gemini](https://img.shields.io/badge/Google%20Gemini-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white)](https://gemini.google.com/)
 [![Site](https://img.shields.io/badge/Website-linguastik.netlify.app-00C7B7?style=for-the-badge&logo=netlify&logoColor=white)](https://linguastik.netlify.app/)
+[![Demo Video](https://img.shields.io/badge/Demo%20Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=CFD54vMTH8U)
 
 ---
 
 </div>
 
-> 🌐 **[linguastik.netlify.app](https://linguastik.netlify.app/)** — Visit the landing page for **step-by-step installation guides and direct download links** for both the CLI and the browser extension.
+> 🎬 **[Watch the full demo on YouTube](https://www.youtube.com/watch?v=CFD54vMTH8U)** — CLI and browser extension walkthrough, end to end.
 
+> 🌐 **[linguastik.netlify.app](https://linguastik.netlify.app/)** — Visit the landing page for **step-by-step installation guides and direct download links** for both the CLI and the browser extension.
 
 Linguastik is a developer toolset that makes the web and your command line readable in any language. It ships as two separate tools that share the same translation backbone:
 

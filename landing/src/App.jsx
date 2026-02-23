@@ -5,6 +5,7 @@ const EXT_ZIP_URL = 'https://github.com/blueberry-adii/linguastik/releases/downl
 const NPM_URL = 'https://www.npmjs.com/package/@linguastik/cli'
 
 const NAV_LINKS = [
+  { label: 'Demo', href: '#demo' },
   { label: 'Features', href: '#features' },
   { label: 'CLI', href: '#cli' },
   { label: 'Extension', href: '#extension' },
@@ -568,6 +569,37 @@ export default function App() {
               '✦ Linguastik  正確なコンテキスト対応の翻訳...',
             ]} />
           </div>
+        </div>
+      </section>
+
+      {/* ── DEMO VIDEO ── */}
+      <section id="demo" className="py-24 px-6 relative">
+        <div className="absolute rounded-full blur-3xl pointer-events-none w-[400px] h-[400px] bg-violet-600 opacity-[0.09] top-0 left-1/2 -translate-x-1/2" />
+        <div className="max-w-4xl mx-auto relative z-10">
+          <div className="text-center mb-10">
+            <Badge>Demo</Badge>
+            <h2 className="mt-4 text-4xl md:text-5xl font-extrabold tracking-tight">
+              See It in <span className="bg-gradient-to-r from-cyan-400 to-violet-500 bg-clip-text text-transparent">Action</span>
+            </h2>
+            <p className="mt-4 text-white/50 text-lg">Watch the full walkthrough — CLI and browser extension, end to end.</p>
+          </div>
+          <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-black/40 shadow-2xl shadow-black/50"
+            style={{ paddingTop: '56.25%' }}>
+            <iframe
+              className="absolute inset-0 w-full h-full"
+              src="https://www.youtube.com/embed/CFD54vMTH8U"
+              title="Linguastik Demo"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+          <p className="mt-6 text-center text-white/30 text-sm">
+            Prefer to watch on YouTube?{' '}
+            <a href="https://www.youtube.com/watch?v=CFD54vMTH8U" target="_blank" rel="noopener noreferrer"
+              className="text-cyan-400 hover:text-cyan-300 transition-colors">
+              Open in YouTube →
+            </a>
+          </p>
         </div>
       </section>
 
